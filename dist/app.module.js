@@ -8,16 +8,36 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
-const app_controller_1 = require("./app.controller");
-const app_service_1 = require("./app.service");
+const sequelize_1 = require("@nestjs/sequelize");
+const usuario_model_1 = require("./database/models/usuario.model");
+const Categoria_model_1 = require("./database/models/Categoria.model");
+const rol_model_1 = require("./database/models/rol.model");
+const posicion_model_1 = require("./database/models/posicion.model");
+const Estado_model_1 = require("./database/models/Estado.model");
+const usuariorol_model_1 = require("./database/models/usuariorol.model");
+const usuarioposicion_model_1 = require("./database/models/usuarioposicion.model");
+const usuarios_module_1 = require("./modules/users/usuarios.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [],
-        controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        imports: [
+            sequelize_1.SequelizeModule.forRoot({
+                dialect: 'mysql',
+                host: process.env.DB_HOST,
+                port: Number(process.env.DB_PORT || 3306),
+                database: process.env.DB_NAME,
+                username: process.env.DB_USER,
+                password: process.env.DB_PASS,
+                models: [usuario_model_1.Usuario, Categoria_model_1.Categoria, rol_model_1.Rol, posicion_model_1.Posicion, Estado_model_1.Estado, usuariorol_model_1.UsuarioRol, usuarioposicion_model_1.UsuarioPosicion],
+                autoLoadModels: false,
+                synchronize: false,
+                logging: false,
+            }),
+            sequelize_1.SequelizeModule.forFeature([usuario_model_1.Usuario, Categoria_model_1.Categoria, rol_model_1.Rol, posicion_model_1.Posicion, Estado_model_1.Estado, usuariorol_model_1.UsuarioRol, usuarioposicion_model_1.UsuarioPosicion]),
+            usuarios_module_1.UsuariosModule,
+        ],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map
