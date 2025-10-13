@@ -4,6 +4,6 @@ const config_1 = require("@nestjs/config");
 exports.default = (0, config_1.registerAs)("googleOAuth", () => ({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_SECRET,
-    callbackURL: process.env.GOOGLE_CALLBACK,
+    callbackURL: process.env.GOOGLE_CALLBACK_URL,
 }));
 //# sourceMappingURL=google-oauth.config.js.map
