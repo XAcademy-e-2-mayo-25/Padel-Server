@@ -1,0 +1,1 @@
+Migraciones para definir tablas con sus campos y relaciones
