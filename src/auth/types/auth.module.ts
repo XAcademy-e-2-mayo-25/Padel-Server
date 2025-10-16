@@ -7,14 +7,18 @@ import { GoogleAuthGuard } from '../guards/google-auth/google-auth.guard';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import jwtConfig from '../config/jwt.config';
+import { AuthService } from './auth.service';
+import { LocalStrategy } from '../strategies/local.strategy';
+import { JwtStrategy } from '../strategies/jwt.strategy';
 
 @Module({
   imports: [
     ConfigModule.forFeature(googleOauthConfig),
+    ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     PassportModule.register({ defaultStrategy: 'google' }),
   ],
   controllers: [AuthController],
-  providers: [GoogleStrategy, GoogleAuthGuard],
+  providers: [GoogleStrategy, GoogleAuthGuard, AuthService,LocalStrategy,JwtStrategy],
 })
 export class AuthModule {}

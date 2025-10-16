@@ -1,3 +1,5 @@
+//este archivo se puede borrar, es parte de la configuracion inicial de nestjs
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';

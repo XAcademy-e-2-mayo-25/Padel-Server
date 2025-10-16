@@ -17,6 +17,11 @@ const google_oauth_config_1 = __importDefault(require("../config/google-oauth.co
 const google_strategy_1 = require("../strategies/google.strategy");
 const google_auth_guard_1 = require("../guards/google-auth/google-auth.guard");
 const auth_controller_1 = require("./auth.controller");
+const jwt_1 = require("@nestjs/jwt");
+const jwt_config_1 = __importDefault(require("../config/jwt.config"));
+const auth_service_1 = require("./auth.service");
+const local_strategy_1 = require("../strategies/local.strategy");
+const jwt_strategy_1 = require("../strategies/jwt.strategy");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -24,10 +29,12 @@ exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
             config_1.ConfigModule.forFeature(google_oauth_config_1.default),
+            config_1.ConfigModule.forFeature(jwt_config_1.default),
+            jwt_1.JwtModule.registerAsync(jwt_config_1.default.asProvider()),
             passport_1.PassportModule.register({ defaultStrategy: 'google' }),
         ],
         controllers: [auth_controller_1.AuthController],
-        providers: [google_strategy_1.GoogleStrategy, google_auth_guard_1.GoogleAuthGuard],
+        providers: [google_strategy_1.GoogleStrategy, google_auth_guard_1.GoogleAuthGuard, auth_service_1.AuthService, local_strategy_1.LocalStrategy, jwt_strategy_1.JwtStrategy],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

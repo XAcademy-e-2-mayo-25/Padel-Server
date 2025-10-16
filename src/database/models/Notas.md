@@ -1,0 +1,1 @@
+se definen las tablas de mysql en clases sequelize a través de un mapeo objeto relacional, cada archivo model representa una tabla.

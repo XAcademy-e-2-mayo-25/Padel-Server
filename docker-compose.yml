@@ -1,6 +1,4 @@
-#archivo docker con configuración basicam, por el momento solo back y db
-version: "3.9"
-
+# archivo docker con configuración basica, por el momento solo back y db
 services:
   api:
     build:
@@ -14,8 +12,11 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
-      - db
-    command: npm run start:dev
+      db:
+        condition: service_healthy 
+    # Ejecuta migraciones y luego arranca Nest en modo dev
+    command: sh -c "npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && npm run start:dev"
+
 
   db:
     image: mysql:8.0
@@ -30,6 +31,11 @@ services:
       - "3307:3306"   # puerto que expone a definir, yo puse 3307 porque tengo el 3306 ocupado
     volumes:
       - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
 volumes:
   db_data:
