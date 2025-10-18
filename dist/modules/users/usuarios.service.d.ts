@@ -17,6 +17,7 @@ export declare class UsuariosService {
     private readonly posicionModel;
     private readonly sequelize;
     constructor(usuarioModel: typeof Usuario, usuarioRolModel: typeof UsuarioRol, usuarioPosModel: typeof UsuarioPosicion, posicionModel: typeof Posicion, sequelize: Sequelize);
+    findByEmail(email: string): Promise<Usuario | null>;
     crearUsuario(dto: CrearUsuarioDto): Promise<{
         mensaje: string;
         usuario: Usuario | null;

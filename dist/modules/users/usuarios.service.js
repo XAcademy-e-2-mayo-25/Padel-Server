@@ -44,6 +44,9 @@ let UsuariosService = class UsuariosService {
         this.posicionModel = posicionModel;
         this.sequelize = sequelize;
     }
+    async findByEmail(email) {
+        return this.usuarioModel.findOne({ where: { email } });
+    }
     async crearUsuario(dto) {
         const existente = await this.usuarioModel.findOne({ where: { email: dto.email } });
         if (existente)

@@ -22,6 +22,7 @@ const editar_usuario_dto_1 = require("./dto/editar-usuario.dto");
 const editar_posiciones_dto_1 = require("./dto/editar-posiciones.dto");
 const editar_roles_dto_1 = require("./dto/editar-roles.dto");
 const listar_usuarios_dto_1 = require("./dto/listar-usuarios.dto");
+const jwt_auth_guard_1 = require("../../guards/jwt-auth.guard");
 let UsuariosController = class UsuariosController {
     usuariosService;
     constructor(usuariosService) {
@@ -53,6 +54,12 @@ let UsuariosController = class UsuariosController {
     }
     listar(query) {
         return this.usuariosService.listarUsuarios(query);
+    }
+    felicidades(req) {
+        return {
+            mensaje: `Felicidades ${req.user.email}, estás registrado y autenticado!`,
+            usuario: req.user,
+        };
     }
 };
 exports.UsuariosController = UsuariosController;
@@ -132,6 +139,14 @@ __decorate([
     __metadata("design:paramtypes", [listar_usuarios_dto_1.ListarUsuariosDto]),
     __metadata("design:returntype", void 0)
 ], UsuariosController.prototype, "listar", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('test'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], UsuariosController.prototype, "felicidades", null);
 exports.UsuariosController = UsuariosController = __decorate([
     (0, common_1.Controller)('usuarios'),
     __metadata("design:paramtypes", [usuarios_service_1.UsuariosService])

@@ -9,6 +9,10 @@ import { Estado } from './database/models/Estado.model';
 import { UsuarioRol } from './database/models/usuariorol.model';
 import { UsuarioPosicion } from './database/models/usuarioposicion.model';
 import { UsuariosModule } from './modules/users/usuarios.module';
+import { AuthModule } from './modules/auth/auth.module';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 @Module({
   imports: [
@@ -24,8 +28,9 @@ import { UsuariosModule } from './modules/users/usuarios.module';
       synchronize: false,
       logging: false,
     }),
-    SequelizeModule.forFeature([Usuario, Categoria, Rol, Posicion, Estado, UsuarioRol, UsuarioPosicion]),
     UsuariosModule,
+    AuthModule,
   ],
+  controllers: [],
 })
 export class AppModule {}
