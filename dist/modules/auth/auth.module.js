@@ -39,42 +39,32 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = void 0;
+exports.AuthModule = void 0;
 const common_1 = require("@nestjs/common");
-const sequelize_1 = require("@nestjs/sequelize");
-const usuario_model_1 = require("./database/models/usuario.model");
-const Categoria_model_1 = require("./database/models/Categoria.model");
-const rol_model_1 = require("./database/models/rol.model");
-const posicion_model_1 = require("./database/models/posicion.model");
-const Estado_model_1 = require("./database/models/Estado.model");
-const usuariorol_model_1 = require("./database/models/usuariorol.model");
-const usuarioposicion_model_1 = require("./database/models/usuarioposicion.model");
-const usuarios_module_1 = require("./modules/users/usuarios.module");
-const auth_module_1 = require("./modules/auth/auth.module");
+const passport_1 = require("@nestjs/passport");
+const google_strategy_1 = require("./strategies/google.strategy");
+const jwt_1 = require("@nestjs/jwt");
+const auth_service_1 = require("../../services/auth/auth.service");
+const auth_controller_1 = require("../../controllers/auth/auth.controller");
+const jwt_strategy_1 = require("./strategies/jwt.strategy");
+const usuarios_module_1 = require("../users/usuarios.module");
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-let AppModule = class AppModule {
+let AuthModule = class AuthModule {
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = __decorate([
+exports.AuthModule = AuthModule;
+exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            sequelize_1.SequelizeModule.forRoot({
-                dialect: 'mysql',
-                host: process.env.DB_HOST,
-                port: Number(process.env.DB_PORT || 3306),
-                database: process.env.DB_NAME,
-                username: process.env.DB_USER,
-                password: process.env.DB_PASS,
-                models: [usuario_model_1.Usuario, Categoria_model_1.Categoria, rol_model_1.Rol, posicion_model_1.Posicion, Estado_model_1.Estado, usuariorol_model_1.UsuarioRol, usuarioposicion_model_1.UsuarioPosicion],
-                autoLoadModels: false,
-                synchronize: false,
-                logging: false,
-            }),
             usuarios_module_1.UsuariosModule,
-            auth_module_1.AuthModule,
+            passport_1.PassportModule.register({ session: false }),
+            jwt_1.JwtModule.register({
+                secret: process.env.JWT_SECRET,
+                signOptions: { expiresIn: '1h' },
+            }),
         ],
-        controllers: [],
+        providers: [auth_service_1.AuthService, google_strategy_1.GoogleStrategy, jwt_strategy_1.JwtStrategy],
+        controllers: [auth_controller_1.AuthController],
     })
-], AppModule);
-//# sourceMappingURL=app.module.js.map
+], AuthModule);
+//# sourceMappingURL=auth.module.js.map

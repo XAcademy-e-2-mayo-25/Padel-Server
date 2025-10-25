@@ -46,6 +46,11 @@ export class UsuariosService {
     private readonly sequelize: Sequelize,
   ) {}
 
+  // Método público para buscar usuario por email (sino tira error en el auth.service)
+  async findByEmail(email: string) {
+    return this.usuarioModel.findOne({ where: { email } });
+  }
+
   //Funcion para crear usuario con rol jugador (id 2), estado habilitado (id 2) y posicion no definida (id 1)
   //requiere un dto con al menos nombres, apellidos y email, el resto de los campos son opcionales
   async crearUsuario(dto: CrearUsuarioDto) {

@@ -38,43 +38,42 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = void 0;
+exports.GoogleStrategy = void 0;
 const common_1 = require("@nestjs/common");
-const sequelize_1 = require("@nestjs/sequelize");
-const usuario_model_1 = require("./database/models/usuario.model");
-const Categoria_model_1 = require("./database/models/Categoria.model");
-const rol_model_1 = require("./database/models/rol.model");
-const posicion_model_1 = require("./database/models/posicion.model");
-const Estado_model_1 = require("./database/models/Estado.model");
-const usuariorol_model_1 = require("./database/models/usuariorol.model");
-const usuarioposicion_model_1 = require("./database/models/usuarioposicion.model");
-const usuarios_module_1 = require("./modules/users/usuarios.module");
-const auth_module_1 = require("./modules/auth/auth.module");
+const passport_1 = require("@nestjs/passport");
+const passport_google_oauth20_1 = require("passport-google-oauth20");
+const auth_service_1 = require("../../../services/auth/auth.service");
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-let AppModule = class AppModule {
+let GoogleStrategy = class GoogleStrategy extends (0, passport_1.PassportStrategy)(passport_google_oauth20_1.Strategy, 'google') {
+    authService;
+    constructor(authService) {
+        super({
+            clientID: process.env.GOOGLE_CLIENT_ID || 'yourClientID',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'yourClientSecret',
+            callbackURL: process.env.GOOGLE_CALLBACK_URL || 'yourGoogleCallbackURL',
+            scope: ['email', 'profile'],
+        });
+        this.authService = authService;
+    }
+    async validate(accessToken, refreshToken, profile, done) {
+        const { name, emails, photos } = profile;
+        const user = await this.authService.validateGoogleUser({
+            email: emails[0].value,
+            nombres: name.givenName,
+            apellidos: name.familyName,
+            fotoPerfil: photos[0].value,
+        });
+        done(null, user);
+    }
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = __decorate([
-    (0, common_1.Module)({
-        imports: [
-            sequelize_1.SequelizeModule.forRoot({
-                dialect: 'mysql',
-                host: process.env.DB_HOST,
-                port: Number(process.env.DB_PORT || 3306),
-                database: process.env.DB_NAME,
-                username: process.env.DB_USER,
-                password: process.env.DB_PASS,
-                models: [usuario_model_1.Usuario, Categoria_model_1.Categoria, rol_model_1.Rol, posicion_model_1.Posicion, Estado_model_1.Estado, usuariorol_model_1.UsuarioRol, usuarioposicion_model_1.UsuarioPosicion],
-                autoLoadModels: false,
-                synchronize: false,
-                logging: false,
-            }),
-            usuarios_module_1.UsuariosModule,
-            auth_module_1.AuthModule,
-        ],
-        controllers: [],
-    })
-], AppModule);
-//# sourceMappingURL=app.module.js.map
+exports.GoogleStrategy = GoogleStrategy;
+exports.GoogleStrategy = GoogleStrategy = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [auth_service_1.AuthService])
+], GoogleStrategy);
+//# sourceMappingURL=google.strategy.js.map

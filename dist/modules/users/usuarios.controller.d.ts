@@ -58,4 +58,8 @@ export declare class UsuariosController {
         totalPages: number;
         items: import("../../database/models/usuario.model").Usuario[];
     }>;
+    felicidades(req: any): {
+        mensaje: string;
+        usuario: any;
+    };
 }

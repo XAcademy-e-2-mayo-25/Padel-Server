@@ -1,6 +1,6 @@
 //Contrlador HTTP para Usuarios, se definen las rutas y se delega la logica al service.ts
 
-import { Body, Controller, HttpCode, HttpStatus, Param, Patch, Post, Put, ParseIntPipe, Get, Query } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Param, Patch, Post, Put, ParseIntPipe, Get, Query, UseGuards, Req } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto';
 import { BajaUsuarioDto } from './dto/baja-usuario.dto';
@@ -9,6 +9,7 @@ import { EditarUsuarioDto } from './dto/editar-usuario.dto';
 import { EditarPosicionesDto } from './dto/editar-posiciones.dto';
 import { EditarRolesDto } from './dto/editar-roles.dto';
 import { ListarUsuariosDto } from './dto/listar-usuarios.dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 //prefijo de ruta /usuarios
 @Controller('usuarios')
@@ -45,6 +46,7 @@ export class UsuariosController {
   }
 
   //editar datos de usuario, requiere de id como parametro, se controla el parametro
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   async editar(
@@ -82,4 +84,16 @@ export class UsuariosController {
   listar(@Query() query: ListarUsuariosDto) {
     return this.usuariosService.listarUsuarios(query);
   }
+
+  // prueba
+  @UseGuards(JwtAuthGuard)
+  @Get('test')
+  felicidades(@Req() req: any) {
+    // req.user viene del payload del JWT
+    return {
+      mensaje: `Felicidades ${req.user.email}, estás registrado y autenticado!`,
+      usuario: req.user,
+    };
+  }
+
 }
