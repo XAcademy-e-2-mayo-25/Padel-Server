@@ -1,98 +1,75 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Padel Server - backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Produccion de backend para proyecto Padel de XAcademy Santex
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+# Tecnologías utilizadas
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+→ NestJS: Framework de Node.js para el desarrollo de aplicaciones del lado del servidor con arquitectura modular, inyección de dependencias y soporte nativo para TypeScript.
 
-## Project setup
+→ TypeScript: Como lenguaje tipado que mejora la mantenibilidad y escalabilidad del código.
 
-```bash
-$ npm install
-```
+→ MySQL: Base de datos relacional.
 
-## Compile and run the project
+→ Sequelize: ORM para definir modelos y relaciones entre entidades, y realizar operaciones SQL desde código JavaScript/TypeScript.
 
-```bash
-# development
-$ npm run start
+→ Clases Validator y Transformer: Para validación y transformación automática de DTOs.
 
-# watch mode
-$ npm run start:dev
+→ Dotenv: Como gestor central de variables de entorno.
 
-# production mode
-$ npm run start:prod
-```
+→ Firebase Authentication (Google Sign-In): Módulo de autenticación utilizado para el inicio de sesión con cuentas de Google, gestionando tokens y roles de usuario.
 
-## Run tests
+→ WebSockets: Canal de comunicación en tiempo real para notificaciones entre servidor y clientes conectados.
 
-```bash
-# unit tests
-$ npm run test
+→ Docker: Contenerización del backend y servicios asociados.
 
-# e2e tests
-$ npm run test:e2e
+→ Docker Compose: Como orquestador de múltiples contenedores.
 
-# test coverage
-$ npm run test:cov
-```
+→ Git & GitHub: Control de versiones y colaboración en equipo.
 
-## Deployment
+→ Swagger: Soft para generar documentación.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+→ Postman: Herramienta para pruebas y validación de endpoints durante el desarrollo.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+# Variables de entorno para archivo .env
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+# App
+NODE_ENV=development
+APP_PORT=3000
 
-## Resources
+# Base de datos
+DB_HOST=db
+DB_PORT=3306
+DB_NAME=padel
+DB_USER=padel
+DB_PASS=padel
+DB_DIALECT=mysql
 
-Check out a few resources that may come in handy when working with NestJS:
+# Autenticación Google (Ver rama oAuth-Google-JWT)
+GOOGLE_CLIENT_ID=Pegar la client ID del servicio 
+GOOGLE_CLIENT_SECRET=Pegar la cliente Secret del servicio
+GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# JWT
+JWT_SECRET=Pegar KEY JWT
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Compilación y ejecución
 
-## Stay in touch
+1- Clona el repositorio: https://github.com/XAcademy-e-2-mayo-25/Padel-Server.git
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+2- Desde la raiz del repo /Padel-Server ejecutar: npm install (para instalar dependencias de Node)
 
-## License
+3- Crear archivo .env y configurar variables de entorno
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+4- Crear y levantar contenedores por primera vez: docker compose up --build (levanta contenedores back + base de datos e integra a datos semillas a las tablas configuradas)
+
+5- Si los contenedores ya fueron creados y se han sembrado las seeds en las tablas levantar proyecto con: docker compose up
+
+6- Para eliminar los contenedores (por si se necesitan reconstruir en caso de modificar tablas/seeds o algun otro archivo que requiera reconstuir), usar los comandos:
+    6.A - docker compose down -v
+    6.B - docker compose up --build
