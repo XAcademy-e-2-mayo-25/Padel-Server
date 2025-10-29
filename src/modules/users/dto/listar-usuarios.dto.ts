@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, IsString, Length, Min } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 //Con este dto se podra buscar, filtrar, ordenar y paginar usuarios
 //definiendo parametros de busqueda y filtrado para que desde el front se puedan usar enviando query params en la URL
@@ -7,12 +8,24 @@ import { IsIn, IsInt, IsOptional, IsString, Length, Min } from 'class-validator'
 export class ListarUsuariosDto {
   // Paginacion par acontrolar la cantidad de registros devueltos por pagina, por defecto empieza en pagina 1 y cantidad de registros por pagina 10
   //para usar: URL/usuarios?page=1&limit=10
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Número de página para paginación. Valor mínimo 1.',
+    minimum: 1,
+    type: Number,
+  })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt()
   @Min(1)
   page?: number = 1;
 
+  @ApiPropertyOptional({
+    example: 10,
+    description: 'Cantidad de registros por página. Valor mínimo 1.',
+    minimum: 1,
+    type: Number,
+  })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt()
@@ -20,55 +33,92 @@ export class ListarUsuariosDto {
   limit?: number = 10;
 
   //Ordenamiento ascendente y descendente por diferentes campos
-  //para usar: URL/usuarios?sortBy=apellidos&sortDir=ASC (ORDENAR LOS REGISTROS POR APELLIDO EN FORMA ASCENDENTE, SERIA POR ORDEN ALFABETICO)
-  //se puede combinar con page y limit tambien: URL/usuarios?sortBy=apellidos&sortDir=ASC&page=1&limit=50 (MISMA BUSQUEDA QUE LA ANTERIOR PERO PAGINAR DE A 50 REGISTROS)
+  @ApiPropertyOptional({
+    example: 'apellidos',
+    description:
+      'Campo para ordenar los resultados. Valores permitidos: idUsuario, nombres, apellidos, email, idCategoria.',
+    enum: ['idUsuario', 'nombres', 'apellidos', 'email', 'idCategoria'],
+  })
   @IsOptional()
-  //campo de ordenamiento
   @IsIn(['idUsuario', 'nombres', 'apellidos', 'email', 'idCategoria'])
   sortBy?: 'idUsuario' | 'nombres' | 'apellidos' | 'email' | 'idCategoria' = 'idUsuario';
-  //direccion en minusculas y mayusculas por las dudas, esto seria bueno colocar una lista desplegable en el front para evitar tipeo
+
+  @ApiPropertyOptional({
+    example: 'ASC',
+    description:
+      'Dirección del ordenamiento. Valores permitidos: ASC, DESC (mayúsculas o minúsculas).',
+    enum: ['ASC', 'DESC', 'asc', 'desc'],
+  })
   @IsOptional()
   @IsIn(['ASC', 'DESC', 'asc', 'desc'])
   sortDir?: 'ASC' | 'DESC' | 'asc' | 'desc' = 'ASC';
 
-  // Filtros por texto parciales de tipo contains
-  // para usar: URL/usuarios?apellidos=gomez
-  // para usar: URL/usuarios?email=test
+  // Filtros por texto parciales
+  @ApiPropertyOptional({
+    example: 'gomez',
+    description: 'Filtro por nombre o apellido (búsqueda parcial).',
+    minLength: 1,
+    maxLength: 100,
+  })
   @IsOptional()
   @IsString()
   @Length(1, 100)
   nombre?: string; // busca en nombres y apellidos
 
+  @ApiPropertyOptional({
+    example: 'test@mail.com',
+    description: 'Filtro de búsqueda parcial por email.',
+    minLength: 1,
+    maxLength: 150,
+  })
   @IsOptional()
   @IsString()
   @Length(1, 150)
   email?: string; // busca en los emails
 
-  // Filtros exactos por ID del usuario
-  // para usar: URL/usuarios?idCategoria=1
+  // Filtros exactos
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Filtro por categoría. Valor entero >= 1.',
+    type: Number,
+  })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt()
   @Min(1)
   idCategoria?: number;
 
-  // Filtros por relacion, rol, estado o posicion, tambien se pueden combinar
-  // para usar: URL/usuarios?idRol=2&idPosicion=2 (BUSCA ROLES JUGADOR POSICION DRIVE)
+  @ApiPropertyOptional({
+    example: 2,
+    description: 'Filtro por rol del usuario. Valor entero >= 1.',
+    type: Number,
+  })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt()
   @Min(1)
   idRol?: number; // ADMIN=1, JUGADOR=2, CLUB=3
 
+  @ApiPropertyOptional({
+    example: 3,
+    description: 'Filtro por estado del usuario. Valor entero >= 1.',
+    type: Number,
+  })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt()
   @Min(1)
   idEstado?: number; // PENDIENTE=1, HABILITADO=2, BANEADO=3
 
+  @ApiPropertyOptional({
+    example: 2,
+    description: 'Filtro por posición del jugador. Valor entero >= 1.',
+    type: Number,
+  })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt()
   @Min(1)
   idPosicion?: number; // NO DEFINIDO=1, DRIVE=2, REVES=3
 }
+

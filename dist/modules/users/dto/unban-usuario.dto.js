@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UnbanUsuarioDto = void 0;
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
+const swagger_1 = require("@nestjs/swagger");
 class UnbanUsuarioDto {
     idRol;
     applyAllRoles = false;
@@ -19,6 +20,12 @@ class UnbanUsuarioDto {
 }
 exports.UnbanUsuarioDto = UnbanUsuarioDto;
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 3,
+        description: 'ID del rol a desbanear. Si se usa applyAllRoles=true, este campo es ignorado.',
+        minimum: 1,
+        type: Number,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Transform)(({ value }) => parseInt(value, 10)),
     (0, class_validator_1.IsInt)(),
@@ -26,12 +33,24 @@ __decorate([
     __metadata("design:type", Number)
 ], UnbanUsuarioDto.prototype, "idRol", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: false,
+        default: false,
+        description: 'Si es true, se desbanean todos los roles del usuario e ignora idRol.',
+        type: Boolean,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Transform)(({ value }) => value === true || value === 'true'),
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], UnbanUsuarioDto.prototype, "applyAllRoles", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 'Revisión realizada. Se revierte la sanción.',
+        description: 'Motivo del desbaneo (opcional, longitud 1 a 300 caracteres).',
+        minLength: 1,
+        maxLength: 300,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(1, 300),

@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrearUsuarioDto = void 0;
 const class_validator_1 = require("class-validator");
+const swagger_1 = require("@nestjs/swagger");
 class CrearUsuarioDto {
     nombres;
     apellidos;
@@ -23,44 +24,89 @@ class CrearUsuarioDto {
 }
 exports.CrearUsuarioDto = CrearUsuarioDto;
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        example: 'Carlos Alberto',
+        description: 'Nombres del usuario. Longitud entre 1 y 100 caracteres.',
+        minLength: 1,
+        maxLength: 100,
+    }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(1, 100),
     __metadata("design:type", String)
 ], CrearUsuarioDto.prototype, "nombres", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        example: 'Gómez',
+        description: 'Apellidos del usuario. Longitud entre 1 y 100 caracteres.',
+        minLength: 1,
+        maxLength: 100,
+    }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(1, 100),
     __metadata("design:type", String)
 ], CrearUsuarioDto.prototype, "apellidos", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: '40100200',
+        description: 'DNI del usuario. Campo opcional (1 a 20 caracteres).',
+        minLength: 1,
+        maxLength: 20,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(1, 20),
     __metadata("design:type", String)
 ], CrearUsuarioDto.prototype, "dni", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        example: 'carlos.gomez@mail.com',
+        description: 'Email válido del usuario.',
+    }),
     (0, class_validator_1.IsEmail)(),
     __metadata("design:type", String)
 ], CrearUsuarioDto.prototype, "email", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 'https://mi-servidor.com/perfiles/carlos.jpg',
+        description: 'URL a la foto de perfil del usuario (opcional).',
+        minLength: 1,
+        maxLength: 255,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(1, 255),
     __metadata("design:type", String)
 ], CrearUsuarioDto.prototype, "fotoPerfil", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 'Córdoba',
+        description: 'Provincia del usuario (opcional).',
+        minLength: 1,
+        maxLength: 80,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(1, 80),
     __metadata("design:type", String)
 ], CrearUsuarioDto.prototype, "provincia", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 'Río Cuarto',
+        description: 'Localidad del usuario (opcional).',
+        minLength: 1,
+        maxLength: 120,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(1, 120),
     __metadata("design:type", String)
 ], CrearUsuarioDto.prototype, "localidad", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 2,
+        description: 'ID de categoría del usuario (opcional). Debe ser entero y positivo.',
+        type: Number,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.IsPositive)(),

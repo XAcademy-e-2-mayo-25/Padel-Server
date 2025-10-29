@@ -12,11 +12,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EditarPosicionesDto = void 0;
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
+const swagger_1 = require("@nestjs/swagger");
 class EditarPosicionesDto {
     posiciones;
 }
 exports.EditarPosicionesDto = EditarPosicionesDto;
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        example: [1, 2],
+        description: 'Lista de posiciones del jugador. Debe contener entre 1 y 3 elementos, con valores entre 1 y 3. Acepta [2], ["2"], 2 o "2".',
+        minItems: 1,
+        maxItems: 3,
+        isArray: true,
+        type: Number,
+    }),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ArrayNotEmpty)(),
     (0, class_validator_1.IsInt)({ each: true }),
