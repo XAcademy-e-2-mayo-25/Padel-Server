@@ -16,6 +16,7 @@ exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const auth_service_1 = require("../../services/auth/auth.service");
+const swagger_1 = require("@nestjs/swagger");
 let AuthController = class AuthController {
     authService;
     constructor(authService) {
@@ -31,6 +32,11 @@ exports.AuthController = AuthController;
 __decorate([
     (0, common_1.Get)('google'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('google')),
+    (0, swagger_1.ApiOperation)({ summary: 'Redirige al usuario a Google para autenticación' }),
+    (0, swagger_1.ApiResponse)({
+        status: 302,
+        description: 'Redirección a Google OAuth2 para autenticar al usuario',
+    }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
@@ -38,12 +44,22 @@ __decorate([
 __decorate([
     (0, common_1.Get)('google/callback'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('google')),
+    (0, swagger_1.ApiOperation)({ summary: 'Callback de Google. Devuelve los datos del usuario y el token' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Autenticación exitosa. Devuelve la información del usuario y token',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 401,
+        description: 'Autenticación fallida o token inválido',
+    }),
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "googleAuthRedirect", null);
 exports.AuthController = AuthController = __decorate([
+    (0, swagger_1.ApiTags)('Auth'),
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])
 ], AuthController);

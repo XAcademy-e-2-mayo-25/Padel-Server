@@ -1,11 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  //se aplicaran reglas de validaciones y transformaciones a todos los endpoint que usen dto
+  //Validaciones globales 
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,            // elimina propiedades que no estén en el DTO
@@ -14,6 +15,33 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000);
+  //Prefix y versionado
+  app.setGlobalPrefix('api');                
+  app.enableVersioning({ type: VersioningType.URI }); 
+
+  //Swagger
+  const config = new DocumentBuilder()
+    .setTitle('Pádel API')
+    .setDescription('API de reservas de canchas de pádel')
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
+      'access-token',
+    )
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document, {
+    swaggerOptions: { persistAuthorization: true },
+  });
+
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+
+  console.log(`API: http://localhost:${port}/api`);
+  console.log(`Swagger UI: http://localhost:${port}/docs`);
+  console.log(`OpenAPI JSON: http://localhost:${port}/docs-json`);
 }
+
 bootstrap();
+
