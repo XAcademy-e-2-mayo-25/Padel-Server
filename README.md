@@ -28,7 +28,9 @@ Produccion de backend para proyecto Padel de XAcademy Santex
 
 → Git & GitHub: Control de versiones y colaboración en equipo.
 
-→ Swagger: Soft para generar documentación.
+→ Swagger: Soft para generar documentación. 
+ http://localhost:3000/docs
+ Esté es la URL de la documentación swagger del proyecto 
 
 → Postman: Herramienta para pruebas y validación de endpoints durante el desarrollo.
 
