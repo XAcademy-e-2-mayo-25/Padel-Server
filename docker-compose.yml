@@ -1,11 +1,10 @@
-# archivo docker con configuración basica, por el momento solo back y db
 services:
   api:
     build:
       context: .
     container_name: padel-backend
     ports:
-      - "3000:3000" #puerto a definir
+      - "3000:3000"
     env_file:
       - .env
     volumes:
@@ -13,14 +12,14 @@ services:
       - /usr/src/app/node_modules
     depends_on:
       db:
-        condition: service_healthy 
+        condition: service_healthy
     # Ejecuta migraciones siempre pero no siembra y luego arranca Nest en modo dev
-    command: sh -c "npx sequelize-cli db:migrate && npm run start:dev"
-
+    command: sh -c "npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && npm run start:dev"
+    tty: true  # para mantener logs activos
 
   db:
     image: mysql:8.0
-    container_name: padel-db #Todos estos datos aun están a definir
+    container_name: padel-db
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -28,7 +27,7 @@ services:
       MYSQL_USER: padel
       MYSQL_PASSWORD: padel
     ports:
-      - "3307:3306"   # puerto que expone a definir, yo puse 3307 porque tengo el 3306 ocupado
+      - "3307:3306"  # 3307 externo, 3306 interno (mantenerlo así)
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:

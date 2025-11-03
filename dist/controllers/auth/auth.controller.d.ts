@@ -3,5 +3,5 @@ export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
     googleAuth(): Promise<void>;
-    googleAuthRedirect(req: any): Promise<any>;
+    googleAuthRedirect(req: any, res: any): Promise<any>;
 }

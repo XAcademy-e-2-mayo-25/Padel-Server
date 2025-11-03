@@ -14,6 +14,13 @@ async function bootstrap() {
     }),
   );
 
+  // solucionar problemas de CORS para el frontend en localhost:4200
+  app.enableCors({
+    origin: 'http://localhost:4200',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

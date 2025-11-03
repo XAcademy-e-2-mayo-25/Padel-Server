@@ -23,8 +23,9 @@ let AuthController = class AuthController {
     }
     async googleAuth() {
     }
-    async googleAuthRedirect(req) {
-        return req.user;
+    async googleAuthRedirect(req, res) {
+        const { token } = req.user;
+        return res.redirect(`http://localhost:4200/register?token=${token}`);
     }
 };
 exports.AuthController = AuthController;
@@ -39,8 +40,9 @@ __decorate([
     (0, common_1.Get)('google/callback'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('google')),
     __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "googleAuthRedirect", null);
 exports.AuthController = AuthController = __decorate([
