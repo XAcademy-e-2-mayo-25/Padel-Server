@@ -2,6 +2,10 @@ import { AuthService } from 'src/services/auth/auth.service';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
+    verifyToken(req: any): {
+        valid: boolean;
+        user: any;
+    };
     googleAuth(): Promise<void>;
-    googleAuthRedirect(req: any): Promise<any>;
+    googleAuthRedirect(req: any, res: any): Promise<any>;
 }

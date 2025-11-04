@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
+const jwt_auth_guard_1 = require("../../guards/jwt-auth.guard");
 const auth_service_1 = require("../../services/auth/auth.service");
 const swagger_1 = require("@nestjs/swagger");
 let AuthController = class AuthController {
@@ -22,13 +23,25 @@ let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
     }
+    verifyToken(req) {
+        return { valid: true, user: req.user };
+    }
     async googleAuth() {
     }
-    async googleAuthRedirect(req) {
-        return req.user;
+    async googleAuthRedirect(req, res) {
+        const { token } = req.user;
+        return res.redirect(`http://localhost:4200/register?token=${token}`);
     }
 };
 exports.AuthController = AuthController;
+__decorate([
+    (0, common_1.Get)('verify'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "verifyToken", null);
 __decorate([
     (0, common_1.Get)('google'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('google')),
@@ -54,8 +67,9 @@ __decorate([
         description: 'Autenticación fallida o token inválido',
     }),
     __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "googleAuthRedirect", null);
 exports.AuthController = AuthController = __decorate([

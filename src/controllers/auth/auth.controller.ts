@@ -1,12 +1,19 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { AuthService } from 'src/services/auth/auth.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Auth') //Agrupa estos endpoints en Swagger bajo el tag "Auth"
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {} 
+
+  @Get('verify')
+@UseGuards(JwtAuthGuard)
+verifyToken(@Req() req) {
+  return { valid: true, user: req.user };
+}
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
@@ -30,9 +37,11 @@ export class AuthController {
     status: 401,
     description: 'Autenticación fallida o token inválido',
   })
-  async googleAuthRedirect(@Req() req: any) {
-    // La respuesta ya incluye usuario y token
-    return req.user;
-  }
+  async googleAuthRedirect(@Req() req: any, @Res() res: any) {
+  const { token } = req.user;
+
+  // Redirigimos al frontend con el token como parámetro
+  return res.redirect(`http://localhost:4200/register?token=${token}`);
+}
 }
 
