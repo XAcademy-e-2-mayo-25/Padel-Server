@@ -1,10 +1,17 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { AuthService } from 'src/services/auth/auth.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {} 
+
+  @Get('verify')
+@UseGuards(JwtAuthGuard)
+verifyToken(@Req() req) {
+  return { valid: true, user: req.user };
+}
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
