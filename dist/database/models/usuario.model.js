@@ -23,6 +23,8 @@ let Usuario = class Usuario extends sequelize_typescript_1.Model {
     fotoPerfil;
     provincia;
     localidad;
+    telefono;
+    direccion;
     idCategoria;
     categoria;
     roles;
@@ -71,6 +73,16 @@ __decorate([
     (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING(120)),
     __metadata("design:type", Object)
 ], Usuario.prototype, "localidad", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING(20)),
+    __metadata("design:type", Object)
+], Usuario.prototype, "telefono", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING(255)),
+    __metadata("design:type", Object)
+], Usuario.prototype, "direccion", void 0);
 __decorate([
     (0, sequelize_typescript_1.ForeignKey)(() => Categoria_model_1.Categoria),
     (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),

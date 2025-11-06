@@ -19,12 +19,15 @@ export interface UsuarioAttributes {
   provincia: string | null;
   localidad: string | null;
   idCategoria: number | null;
+
+  telefono: string | null;
+  direccion: string | null;
 }
 
 //campos opcionales al momento de crear un Usuario
 export type UsuarioCreationAttributes = Optional<
   UsuarioAttributes,
-  'idUsuario' | 'dni' | 'fotoPerfil' | 'provincia' | 'localidad' | 'idCategoria'
+  'idUsuario' | 'dni' | 'fotoPerfil' | 'provincia' | 'localidad' | 'idCategoria' | 'telefono' | 'direccion'
 >;
 
 
@@ -42,6 +45,9 @@ export class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
   @AllowNull(true)  @Column(DataType.STRING(255)) fotoPerfil!: string | null;
   @AllowNull(true)  @Column(DataType.STRING(80))  provincia!: string | null;
   @AllowNull(true)  @Column(DataType.STRING(120)) localidad!: string | null;
+
+  @AllowNull(true)  @Column(DataType.STRING(20)) telefono!: string | null;
+  @AllowNull(true)  @Column(DataType.STRING(255)) direccion!: string | null;
     //FK
   @ForeignKey(() => Categoria) @Column(DataType.INTEGER) idCategoria!: number | null;
   @BelongsTo(() => Categoria) categoria?: Categoria;

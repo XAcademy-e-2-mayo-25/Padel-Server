@@ -196,9 +196,18 @@ export class UsuariosService {
       provincia: dto.provincia ?? usuario.provincia,
       localidad: dto.localidad ?? usuario.localidad,
       idCategoria: dto.idCategoria ?? usuario.idCategoria,
+
+      telefono: dto.telefono ?? usuario.telefono,
+      direccion: dto.direccion ?? usuario.direccion,
     };
 
     await this.usuarioModel.update(cambios, { where: { idUsuario } });
+
+  // Si envía una posición nueva (opcional)
+  if (dto.idPosicion) {
+    await this.usuarioPosModel.destroy({ where: { idUsuario } });
+    await this.usuarioPosModel.create({ idUsuario, idPosicion: dto.idPosicion });
+  }
 
     //Construye el usuario editado con sus relaciones
     const actualizado = await this.usuarioModel.findByPk(idUsuario, {

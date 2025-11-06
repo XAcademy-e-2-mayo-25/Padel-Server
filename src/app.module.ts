@@ -27,6 +27,9 @@ import { AuthModule } from './modules/auth/auth.module';
       autoLoadModels: false,
       synchronize: false,
       logging: false,
+      dialectOptions: {
+    allowPublicKeyRetrieval: true,
+  },
     }),
     UsuariosModule,
     AuthModule,
