@@ -137,8 +137,14 @@ let UsuariosService = class UsuariosService {
             provincia: dto.provincia ?? usuario.provincia,
             localidad: dto.localidad ?? usuario.localidad,
             idCategoria: dto.idCategoria ?? usuario.idCategoria,
+            telefono: dto.telefono ?? usuario.telefono,
+            direccion: dto.direccion ?? usuario.direccion,
         };
         await this.usuarioModel.update(cambios, { where: { idUsuario } });
+        if (dto.idPosicion) {
+            await this.usuarioPosModel.destroy({ where: { idUsuario } });
+            await this.usuarioPosModel.create({ idUsuario, idPosicion: dto.idPosicion });
+        }
         const actualizado = await this.usuarioModel.findByPk(idUsuario, {
             include: [
                 { model: usuariorol_model_1.UsuarioRol, include: [rol_model_1.Rol, Estado_model_1.Estado] },

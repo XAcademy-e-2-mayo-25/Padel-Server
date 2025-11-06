@@ -11,7 +11,11 @@ async function bootstrap() {
         forbidNonWhitelisted: true,
         transform: true,
     }));
-    app.setGlobalPrefix('api');
+    app.enableCors({
+        origin: 'http://localhost:4200',
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        credentials: true,
+    });
     app.enableVersioning({ type: common_1.VersioningType.URI });
     const config = new swagger_1.DocumentBuilder()
         .setTitle('Pádel API')
@@ -25,7 +29,7 @@ async function bootstrap() {
     });
     const port = process.env.PORT ?? 3000;
     await app.listen(port);
-    console.log(`API: http://localhost:${port}/api`);
+    console.log(`API: http://localhost:${port}`);
     console.log(`Swagger UI: http://localhost:${port}/docs`);
     console.log(`OpenAPI JSON: http://localhost:${port}/docs-json`);
 }

@@ -37,6 +37,9 @@ exports.AppModule = AppModule = __decorate([
                 autoLoadModels: false,
                 synchronize: false,
                 logging: false,
+                dialectOptions: {
+                    allowPublicKeyRetrieval: true,
+                },
             }),
             usuarios_module_1.UsuariosModule,
             auth_module_1.AuthModule,

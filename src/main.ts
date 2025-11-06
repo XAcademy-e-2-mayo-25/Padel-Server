@@ -23,7 +23,7 @@ async function bootstrap() {
   });
 
   //Prefix y versionado
-  app.setGlobalPrefix('api');                
+  // app.setGlobalPrefix('api');                
   app.enableVersioning({ type: VersioningType.URI }); 
 
   //Swagger
@@ -45,7 +45,7 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
 
-  console.log(`API: http://localhost:${port}/api`);
+  console.log(`API: http://localhost:${port}`);
   console.log(`Swagger UI: http://localhost:${port}/docs`);
   console.log(`OpenAPI JSON: http://localhost:${port}/docs-json`);
 }

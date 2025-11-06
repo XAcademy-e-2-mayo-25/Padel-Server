@@ -13,8 +13,10 @@ export interface UsuarioAttributes {
     provincia: string | null;
     localidad: string | null;
     idCategoria: number | null;
+    telefono: string | null;
+    direccion: string | null;
 }
-export type UsuarioCreationAttributes = Optional<UsuarioAttributes, 'idUsuario' | 'dni' | 'fotoPerfil' | 'provincia' | 'localidad' | 'idCategoria'>;
+export type UsuarioCreationAttributes = Optional<UsuarioAttributes, 'idUsuario' | 'dni' | 'fotoPerfil' | 'provincia' | 'localidad' | 'idCategoria' | 'telefono' | 'direccion'>;
 export declare class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes> implements UsuarioAttributes {
     idUsuario: number;
     nombres: string;
@@ -24,6 +26,8 @@ export declare class Usuario extends Model<UsuarioAttributes, UsuarioCreationAtt
     fotoPerfil: string | null;
     provincia: string | null;
     localidad: string | null;
+    telefono: string | null;
+    direccion: string | null;
     idCategoria: number | null;
     categoria?: Categoria;
     roles?: UsuarioRol[];
