@@ -27,14 +27,18 @@ let AuthService = class AuthService {
             user = existente;
         }
         else {
-            user = await this.usuariosService.crearUsuario({
+            const creado = await this.usuariosService.crearUsuario({
                 email: profile.email,
                 nombres: profile.nombres,
                 apellidos: profile.apellidos,
                 fotoPerfil: profile.fotoPerfil,
             });
+            user = creado.usuario;
         }
-        const payload = { sub: user.idUsuario, email: user.email };
+        const payload = {
+            sub: user.idUsuario,
+            email: user.email,
+        };
         const token = this.jwtService.sign(payload);
         return { user, token };
     }

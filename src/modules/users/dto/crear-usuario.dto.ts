@@ -77,13 +77,12 @@ export class CrearUsuarioDto {
   localidad?: string;
 
   @ApiPropertyOptional({
-    example: 2,
-    description: 'ID de categoría del usuario (opcional). Debe ser entero y positivo.',
-    type: Number,
-  })
-  @IsOptional()
-  @IsInt()
-  @IsPositive()
-  idCategoria?: number;
+  example: "1ra",
+  description: 'Categoría del usuario (texto o código). Ahora se acepta como string.',
+  type: String,
+})
+@IsOptional()
+@IsString()
+idCategoria?: string;
 }
 

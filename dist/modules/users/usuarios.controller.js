@@ -29,6 +29,19 @@ let UsuariosController = class UsuariosController {
     constructor(usuariosService) {
         this.usuariosService = usuariosService;
     }
+    async editarMiPerfil(req, dto) {
+        const user = req.user;
+        const email = user?.email;
+        if (!email) {
+            throw new common_1.BadRequestException('No se pudo determinar el usuario autenticado (sin email)');
+        }
+        const existente = await this.usuariosService.findByEmail(email);
+        if (!existente) {
+            throw new common_1.NotFoundException('Usuario autenticado no existe en la base de datos');
+        }
+        const userId = existente.idUsuario;
+        return this.usuariosService.editarUsuario(userId, dto);
+    }
     async crear(dto) {
         return this.usuariosService.crearUsuario(dto);
     }
@@ -64,6 +77,22 @@ let UsuariosController = class UsuariosController {
     }
 };
 exports.UsuariosController = UsuariosController;
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Patch)('me'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiBearerAuth)('access-token'),
+    (0, swagger_1.ApiOperation)({ summary: 'Editar datos del usuario autenticado' }),
+    (0, swagger_1.ApiOkResponse)({ description: 'Usuario actualizado correctamente.' }),
+    (0, swagger_1.ApiBadRequestResponse)({ description: 'Datos inválidos.' }),
+    (0, swagger_1.ApiNotFoundResponse)({ description: 'Usuario no encontrado.' }),
+    (0, swagger_1.ApiBody)({ type: editar_usuario_dto_1.EditarUsuarioDto }),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, editar_usuario_dto_1.EditarUsuarioDto]),
+    __metadata("design:returntype", Promise)
+], UsuariosController.prototype, "editarMiPerfil", null);
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
