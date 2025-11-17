@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/swagger';
 import { CrearUsuarioDto } from './crear-usuario.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, Length, IsInt, IsPositive } from 'class-validator';
+import { IsOptional, IsString, Length } from 'class-validator';
 
 export class EditarUsuarioDto extends PartialType(CrearUsuarioDto) {
   @ApiPropertyOptional({
@@ -19,20 +19,11 @@ export class EditarUsuarioDto extends PartialType(CrearUsuarioDto) {
     example: 'Av. San Martín 1234',
     description: 'Dirección del usuario (opcional)',
     minLength: 1,
-    maxLength: 40,
+    maxLength: 255,
   })
   @IsOptional()
   @IsString()
-  @Length(1, 40)
+  @Length(1, 255)
   direccion?: string;
-
-  @ApiPropertyOptional({
-    example: 3,
-    description: 'ID de posición del usuario (opcional)',
-    type: Number,
-  })
-  @IsOptional()
-  @IsInt()
-  @IsPositive()
-  idPosicion?: number;
 }
+

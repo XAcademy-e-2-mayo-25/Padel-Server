@@ -85,7 +85,7 @@ __decorate([
 ], Usuario.prototype, "direccion", void 0);
 __decorate([
     (0, sequelize_typescript_1.ForeignKey)(() => Categoria_model_1.Categoria),
-    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING(20)),
     __metadata("design:type", Object)
 ], Usuario.prototype, "idCategoria", void 0);
 __decorate([

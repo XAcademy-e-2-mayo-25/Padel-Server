@@ -6,5 +6,5 @@ export declare class CrearUsuarioDto {
     fotoPerfil?: string;
     provincia?: string;
     localidad?: string;
-    idCategoria?: number;
+    idCategoria?: string;
 }

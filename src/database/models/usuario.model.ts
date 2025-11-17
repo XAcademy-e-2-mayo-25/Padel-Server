@@ -18,7 +18,7 @@ export interface UsuarioAttributes {
   fotoPerfil: string | null;
   provincia: string | null;
   localidad: string | null;
-  idCategoria: number | null;
+  idCategoria: string | null;
 
   telefono: string | null;
   direccion: string | null;
@@ -49,7 +49,7 @@ export class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
   @AllowNull(true)  @Column(DataType.STRING(20)) telefono!: string | null;
   @AllowNull(true)  @Column(DataType.STRING(255)) direccion!: string | null;
     //FK
-  @ForeignKey(() => Categoria) @Column(DataType.INTEGER) idCategoria!: number | null;
+  @ForeignKey(() => Categoria) @Column(DataType.STRING(20)) idCategoria!: string | null;
   @BelongsTo(() => Categoria) categoria?: Categoria;
     //Relaciones con tablas que poseen una referencia por FK a la tabla usuarios
     //con hasmany indicamos que el id de un usuario puede tener varias referencias en usuarioRol y usuarioPosicion

@@ -27,13 +27,20 @@ let GoogleStrategy = class GoogleStrategy extends (0, passport_1.PassportStrateg
     }
     async validate(accessToken, refreshToken, profile, done) {
         const { name, emails, photos } = profile;
-        const user = await this.authService.validateGoogleUser({
-            email: emails[0].value,
-            nombres: name.givenName,
-            apellidos: name.familyName,
-            fotoPerfil: photos[0].value,
+        const email = emails?.[0]?.value;
+        const nombres = name?.givenName || '';
+        const apellidos = name?.familyName || '';
+        const fotoPerfil = photos?.[0]?.value || null;
+        if (!email) {
+            return done(new Error('No se pudo obtener el email de Google'), null);
+        }
+        const userWithToken = await this.authService.validateGoogleUser({
+            email,
+            nombres,
+            apellidos,
+            fotoPerfil,
         });
-        done(null, user);
+        return done(null, userWithToken);
     }
 };
 exports.GoogleStrategy = GoogleStrategy;

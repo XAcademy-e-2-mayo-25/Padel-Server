@@ -103,13 +103,12 @@ __decorate([
 ], CrearUsuarioDto.prototype, "localidad", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        example: 2,
-        description: 'ID de categoría del usuario (opcional). Debe ser entero y positivo.',
-        type: Number,
+        example: "1ra",
+        description: 'Categoría del usuario (texto o código). Ahora se acepta como string.',
+        type: String,
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsInt)(),
-    (0, class_validator_1.IsPositive)(),
-    __metadata("design:type", Number)
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
 ], CrearUsuarioDto.prototype, "idCategoria", void 0);
 //# sourceMappingURL=crear-usuario.dto.js.map
