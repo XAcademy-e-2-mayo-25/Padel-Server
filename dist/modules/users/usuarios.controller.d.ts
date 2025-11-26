@@ -9,10 +9,6 @@ import { ListarUsuariosDto } from './dto/listar-usuarios.dto';
 export declare class UsuariosController {
     private readonly usuariosService;
     constructor(usuariosService: UsuariosService);
-    editarMiPerfil(req: any, dto: EditarUsuarioDto): Promise<{
-        mensaje: string;
-        usuario: import("../../database/models/usuario.model").Usuario | null;
-    }>;
     crear(dto: CrearUsuarioDto): Promise<{
         mensaje: string;
         usuario: import("../../database/models/usuario.model").Usuario | null;

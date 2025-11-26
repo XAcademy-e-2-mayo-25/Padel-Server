@@ -24,8 +24,8 @@ import { AuthModule } from './modules/auth/auth.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS ,
       models: [Usuario, Categoria, Rol, Posicion, Estado, UsuarioRol, UsuarioPosicion],
-      autoLoadModels: true,
-      synchronize: true,
+      autoLoadModels: false,
+      synchronize: false,
       logging: false,
       dialectOptions: {
     allowPublicKeyRetrieval: true,

@@ -18,7 +18,7 @@ export interface UsuarioAttributes {
   fotoPerfil: string | null;
   provincia: string | null;
   localidad: string | null;
-  idCategoria: string | null;
+  idCategoria: number | null;
 
   telefono: string | null;
   direccion: string | null;
@@ -36,20 +36,20 @@ export type UsuarioCreationAttributes = Optional<
 export class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
   implements UsuarioAttributes {
     //PK
-  @PrimaryKey @AutoIncrement @Column(DataType.INTEGER) idUsuario!: number;
+  @PrimaryKey @AutoIncrement @Column(DataType.INTEGER) declare idUsuario: number;
     //Campos no nullos y nulos
-  @AllowNull(false) @Column(DataType.STRING(100)) nombres!: string;
-  @AllowNull(false) @Column(DataType.STRING(100)) apellidos!: string;
-  @AllowNull(true)  @Column(DataType.STRING(20))  dni!: string | null;
-  @AllowNull(false) @Unique @Column(DataType.STRING(160)) email!: string;
-  @AllowNull(true)  @Column(DataType.STRING(255)) fotoPerfil!: string | null;
-  @AllowNull(true)  @Column(DataType.STRING(80))  provincia!: string | null;
-  @AllowNull(true)  @Column(DataType.STRING(120)) localidad!: string | null;
+  @AllowNull(false) @Column(DataType.STRING(100)) declare nombres: string;
+  @AllowNull(false) @Column(DataType.STRING(100)) declare apellidos: string;
+  @AllowNull(true)  @Column(DataType.STRING(20))  declare dni: string | null;
+  @AllowNull(false) @Unique @Column(DataType.STRING(160)) declare email: string;
+  @AllowNull(true)  @Column(DataType.STRING(255)) declare fotoPerfil: string | null;
+  @AllowNull(true)  @Column(DataType.STRING(80))  declare provincia: string | null;
+  @AllowNull(true)  @Column(DataType.STRING(120)) declare localidad: string | null;
 
-  @AllowNull(true)  @Column(DataType.STRING(20)) telefono!: string | null;
-  @AllowNull(true)  @Column(DataType.STRING(255)) direccion!: string | null;
+  @AllowNull(true)  @Column(DataType.STRING(20)) declare telefono: string | null;
+  @AllowNull(true)  @Column(DataType.STRING(255)) declare direccion: string | null;
     //FK
-  @ForeignKey(() => Categoria) @Column(DataType.STRING(20)) idCategoria!: string | null;
+  @ForeignKey(() => Categoria) @Column(DataType.INTEGER) declare idCategoria: number | null;
   @BelongsTo(() => Categoria) categoria?: Categoria;
     //Relaciones con tablas que poseen una referencia por FK a la tabla usuarios
     //con hasmany indicamos que el id de un usuario puede tener varias referencias en usuarioRol y usuarioPosicion

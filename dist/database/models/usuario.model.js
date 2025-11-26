@@ -15,17 +15,6 @@ const Categoria_model_1 = require("./Categoria.model");
 const usuariorol_model_1 = require("./usuariorol.model");
 const usuarioposicion_model_1 = require("./usuarioposicion.model");
 let Usuario = class Usuario extends sequelize_typescript_1.Model {
-    idUsuario;
-    nombres;
-    apellidos;
-    dni;
-    email;
-    fotoPerfil;
-    provincia;
-    localidad;
-    telefono;
-    direccion;
-    idCategoria;
     categoria;
     roles;
     posiciones;
@@ -85,7 +74,7 @@ __decorate([
 ], Usuario.prototype, "direccion", void 0);
 __decorate([
     (0, sequelize_typescript_1.ForeignKey)(() => Categoria_model_1.Categoria),
-    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING(20)),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
     __metadata("design:type", Object)
 ], Usuario.prototype, "idCategoria", void 0);
 __decorate([

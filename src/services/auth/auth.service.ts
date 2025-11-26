@@ -10,39 +10,32 @@ export class AuthService {
   ) {}
 
   async validateGoogleUser(profile: { email: string; nombres: string; apellidos: string; fotoPerfil?: string }) {
-    // 1) Buscar si ya existe el usuario por email
-    const existente = await this.usuariosService.findByEmail(profile.email);
+  // Buscar usuario usando el método público
+  const existente = await this.usuariosService.findByEmail(profile.email);
 
-    let user; // este va a ser SIEMPRE un Usuario (modelo Sequelize)
-
-    if (existente) {
-      // Si ya existe, usamos ese
-      user = existente;
-    } else {
-      // Si no existe, lo creamos
-      const creado = await this.usuariosService.crearUsuario({
-        email: profile.email,
-        nombres: profile.nombres,
-        apellidos: profile.apellidos,
-        fotoPerfil: profile.fotoPerfil,
-        // el resto de campos del DTO quedan como opcionales / null
-      });
-
-      // OJO: crearUsuario devuelve { mensaje, usuario }
-      user = creado.usuario;
-    }
-
-    // 2) Armar el payload del JWT
-    const payload = {
-      sub: user.idUsuario,   // subject del token
-      email: user.email,     // lo usamos después en req.user.email
-    };
-
-    // 3) Firmar el token
-    const token = this.jwtService.sign(payload);
-
-    // 4) Devolver usuario y token al controlador de auth
-    return { user, token };
+  let user;
+  if (existente) {
+    user = existente;
+    console.log('Usuario existente encontrado:', user.idUsuario, user.email);
+  } else {
+    const resultado = await this.usuariosService.crearUsuario({
+      email: profile.email,
+      nombres: profile.nombres,
+      apellidos: profile.apellidos,
+      fotoPerfil: profile.fotoPerfil,
+    });
+    user = resultado.usuario;
+    console.log('Usuario nuevo creado:', user.idUsuario, user.email);
   }
+
+  // Generar JWT
+  const payload = { sub: user.idUsuario, email: user.email };
+  console.log('Payload para JWT:', payload);
+  const token = this.jwtService.sign(payload);
+  console.log('Token generado:', token.substring(0, 50) + '...');
+
+  return { user, token };
 }
+}
+
 

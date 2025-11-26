@@ -17,6 +17,7 @@ const class_validator_1 = require("class-validator");
 class EditarUsuarioDto extends (0, swagger_1.PartialType)(crear_usuario_dto_1.CrearUsuarioDto) {
     telefono;
     direccion;
+    idPosicion;
 }
 exports.EditarUsuarioDto = EditarUsuarioDto;
 __decorate([
@@ -36,11 +37,22 @@ __decorate([
         example: 'Av. San Martín 1234',
         description: 'Dirección del usuario (opcional)',
         minLength: 1,
-        maxLength: 255,
+        maxLength: 40,
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.Length)(1, 255),
+    (0, class_validator_1.Length)(1, 40),
     __metadata("design:type", String)
 ], EditarUsuarioDto.prototype, "direccion", void 0);
+__decorate([
+    (0, swagger_2.ApiPropertyOptional)({
+        example: 3,
+        description: 'ID de posición del usuario (opcional)',
+        type: Number,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.IsPositive)(),
+    __metadata("design:type", Number)
+], EditarUsuarioDto.prototype, "idPosicion", void 0);
 //# sourceMappingURL=editar-usuario.dto.js.map

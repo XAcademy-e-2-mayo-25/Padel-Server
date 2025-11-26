@@ -141,6 +141,10 @@ let UsuariosService = class UsuariosService {
             direccion: dto.direccion ?? usuario.direccion,
         };
         await this.usuarioModel.update(cambios, { where: { idUsuario } });
+        if (dto.idPosicion) {
+            await this.usuarioPosModel.destroy({ where: { idUsuario } });
+            await this.usuarioPosModel.create({ idUsuario, idPosicion: dto.idPosicion });
+        }
         const actualizado = await this.usuarioModel.findByPk(idUsuario, {
             include: [
                 { model: usuariorol_model_1.UsuarioRol, include: [rol_model_1.Rol, Estado_model_1.Estado] },
@@ -165,7 +169,7 @@ let UsuariosService = class UsuariosService {
         const validos = [POS_NO_DEFINIDO, POS_DRIVE, POS_REVES];
         const invalidos = set.filter(id => !validos.includes(id));
         if (invalidos.length > 0)
-            throw new common_1.BadRequestException(`Posiciones inválidas: ${invalidos.join(', ')}`);
+            throw new common_1.BadRequestException('Posiciones inválidas: ${invalidos.join(', ')}');
         await this.sequelize.transaction(async (t) => {
             await this.usuarioPosModel.destroy({ where: { idUsuario }, transaction: t });
             await this.usuarioPosModel.bulkCreate(set.map(idPosicion => ({ idUsuario, idPosicion })), { transaction: t });
@@ -191,7 +195,7 @@ let UsuariosService = class UsuariosService {
         const rolesValidos = [1, 2, 3];
         const invalidos = nuevo.filter((r) => !rolesValidos.includes(r));
         if (invalidos.length)
-            throw new common_1.BadRequestException(`Roles inválidos: ${invalidos.join(', ')}`);
+            throw new common_1.BadRequestException('Roles inválidos: ${invalidos.join(', ')}');
         const mapa = new Map();
         (dto.estados ?? []).forEach((e) => mapa.set(e.idRol, { idEstado: e.idEstado, descripcion: e.descripcion }));
         const defaultEstado = dto.defaultEstado ?? ESTADO_PENDIENTE;

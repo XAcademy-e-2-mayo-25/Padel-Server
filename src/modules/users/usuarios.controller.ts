@@ -1,22 +1,6 @@
 //Contrlador HTTP para Usuarios, se definen las rutas y se delega la logica al service.ts
 
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Patch,
-  Post,
-  Put,
-  ParseIntPipe,
-  Get,
-  Query,
-  UseGuards,
-  Req,
-  BadRequestException,
-  NotFoundException, // ← AGREGADO
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Param, Patch, Post, Put, ParseIntPipe, Get, Query, UseGuards, Req } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto';
 import { BajaUsuarioDto } from './dto/baja-usuario.dto';
@@ -47,36 +31,6 @@ import {
 @Controller('usuarios')
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
-
-  // NUEVO endpoint: editar datos del usuario autenticado
-  @UseGuards(JwtAuthGuard)
-  @Patch('me')
-  @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth('access-token')
-  @ApiOperation({ summary: 'Editar datos del usuario autenticado' })
-  @ApiOkResponse({ description: 'Usuario actualizado correctamente.' })
-  @ApiBadRequestResponse({ description: 'Datos inválidos.' })
-  @ApiNotFoundResponse({ description: 'Usuario no encontrado.' })
-  @ApiBody({ type: EditarUsuarioDto })
-  async editarMiPerfil(@Req() req: any, @Body() dto: EditarUsuarioDto) {
-    const user = req.user;
-
-    // Usamos el email del usuario autenticado
-    const email = user?.email;
-    if (!email) {
-      throw new BadRequestException('No se pudo determinar el usuario autenticado (sin email)');
-    }
-
-    // Buscamos el usuario real en la BD
-    const existente = await this.usuariosService.findByEmail(email);
-    if (!existente) {
-      throw new NotFoundException('Usuario autenticado no existe en la base de datos');
-    }
-
-    const userId = existente.idUsuario;
-
-    return this.usuariosService.editarUsuario(userId, dto);
-  }
 
   //Crear usuario con POST
   @Post()
@@ -111,8 +65,7 @@ export class UsuariosController {
   @ApiBody({ type: BajaUsuarioDto })
   async banear(
     @Param('id') id: string,
-    @Body() dto: BajaUsuarioDto,
-  ) {
+    @Body() dto: BajaUsuarioDto,) {
     return this.usuariosService.banUsuario(Number(id), dto);
   }
 
@@ -142,8 +95,7 @@ export class UsuariosController {
   @ApiBody({ type: EditarUsuarioDto })
   async editar(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: EditarUsuarioDto,
-  ) {
+    @Body() dto: EditarUsuarioDto, ) {
     return this.usuariosService.editarUsuario(id, dto);
   }
 
@@ -158,8 +110,7 @@ export class UsuariosController {
   @ApiBody({ type: EditarPosicionesDto })
   actualizarPosiciones(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: EditarPosicionesDto,
-  ) {
+    @Body() dto: EditarPosicionesDto, ) {
     return this.usuariosService.actualizarPosiciones(id, dto);
   }
 
@@ -193,6 +144,7 @@ export class UsuariosController {
   @ApiOperation({ summary: 'Listar usuarios con filtros, orden y paginación' })
   @ApiOkResponse({ description: 'Listado de usuarios devuelto correctamente.' })
   @ApiBadRequestResponse({ description: 'Parámetros de búsqueda inválidos.' })
+  // (Opcional) explicitar queries para mejor UI en Swagger:
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @ApiQuery({ name: 'sortBy', required: false, enum: ['idUsuario', 'nombres', 'apellidos', 'email', 'idCategoria'], example: 'apellidos' })
@@ -214,10 +166,12 @@ export class UsuariosController {
   @ApiOperation({ summary: 'Endpoint protegido de prueba' })
   @ApiOkResponse({ description: 'Autenticado correctamente.' })
   felicidades(@Req() req: any) {
+    // req.user viene del payload del JWT
     return {
       mensaje: `Felicidades ${req.user.email}, estás registrado y autenticado!`,
       usuario: req.user,
     };
   }
+
 }
 

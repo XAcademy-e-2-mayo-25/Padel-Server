@@ -3,5 +3,6 @@ declare const EditarUsuarioDto_base: import("@nestjs/common").Type<Partial<Crear
 export declare class EditarUsuarioDto extends EditarUsuarioDto_base {
     telefono?: string;
     direccion?: string;
+    idPosicion?: number;
 }
 export {};

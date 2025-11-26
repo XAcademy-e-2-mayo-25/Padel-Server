@@ -4,7 +4,8 @@ export declare class AuthController {
     constructor(authService: AuthService);
     verifyToken(req: any): {
         valid: boolean;
-        user: any;
+        id: any;
+        email: any;
     };
     googleAuth(): Promise<void>;
     googleAuthRedirect(req: any, res: any): Promise<any>;

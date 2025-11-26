@@ -196,22 +196,18 @@ export class UsuariosService {
       provincia: dto.provincia ?? usuario.provincia,
       localidad: dto.localidad ?? usuario.localidad,
       idCategoria: dto.idCategoria ?? usuario.idCategoria,
+
       telefono: dto.telefono ?? usuario.telefono,
       direccion: dto.direccion ?? usuario.direccion,
     };
 
-    //update de los campos editables
     await this.usuarioModel.update(cambios, { where: { idUsuario } });
 
-    // Si envía una posición nueva (opcional)
-    // Por ahora la posición se maneja por el endpoint actualizarPosiciones (PUT :id/posiciones),
-    // así que este bloque se deja comentado para evitar conflictos con el DTO de edición de usuario.
-    /*
-    if (dto.idPosicion) {
-      await this.usuarioPosModel.destroy({ where: { idUsuario } });
-      await this.usuarioPosModel.create({ idUsuario, idPosicion: dto.idPosicion });
-    }
-    */
+  // Si envía una posición nueva (opcional)
+  if (dto.idPosicion) {
+    await this.usuarioPosModel.destroy({ where: { idUsuario } });
+    await this.usuarioPosModel.create({ idUsuario, idPosicion: dto.idPosicion });
+  }
 
     //Construye el usuario editado con sus relaciones
     const actualizado = await this.usuarioModel.findByPk(idUsuario, {
@@ -249,7 +245,7 @@ export class UsuariosService {
     const validos = [POS_NO_DEFINIDO, POS_DRIVE, POS_REVES];
     const invalidos = set.filter(id => !validos.includes(id));
     //si invalidos tiene al menos 1 valor lanza una excepcion, existen posiciones inexistentes/inventados
-    if (invalidos.length > 0) throw new BadRequestException(`Posiciones inválidas: ${invalidos.join(', ')}`);
+    if (invalidos.length > 0) throw new BadRequestException('Posiciones inválidas: ${invalidos.join(', ')}');
 
     //transaccion para reemplazo, borra las filas actuales de usuarioPosicion de ese idUsuario e inserta las que vinieron en el set, es un reemplazo total
     //si algo falla sequelize hace rollback automatico
@@ -291,7 +287,7 @@ export class UsuariosService {
     //valida los elementos del arreglo nuevo con rolesValidos, si alguno no existe lo almacena en invalido
     const invalidos = nuevo.filter((r) => !rolesValidos.includes(r));
     //si invalido tiene al menos un elemento lanza excepcion
-    if (invalidos.length) throw new BadRequestException(`Roles inválidos: ${invalidos.join(', ')}`);
+    if (invalidos.length) throw new BadRequestException('Roles inválidos: ${invalidos.join(', ')}');
 
     //lee el dto que recibe del front y se crea un map de tipo clave-valor donde la clave es idRol y el valor esta formado por idEstado y descripcion si tuviese
     const mapa = new Map<number, { idEstado: number; descripcion?: string }>();
@@ -435,4 +431,3 @@ export class UsuariosService {
     };
   }
 }
-

@@ -34,8 +34,8 @@ exports.AppModule = AppModule = __decorate([
                 username: process.env.DB_USER,
                 password: process.env.DB_PASS,
                 models: [usuario_model_1.Usuario, Categoria_model_1.Categoria, rol_model_1.Rol, posicion_model_1.Posicion, Estado_model_1.Estado, usuariorol_model_1.UsuarioRol, usuarioposicion_model_1.UsuarioPosicion],
-                autoLoadModels: true,
-                synchronize: true,
+                autoLoadModels: false,
+                synchronize: false,
                 logging: false,
                 dialectOptions: {
                     allowPublicKeyRetrieval: true,

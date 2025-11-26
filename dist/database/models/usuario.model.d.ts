@@ -12,7 +12,7 @@ export interface UsuarioAttributes {
     fotoPerfil: string | null;
     provincia: string | null;
     localidad: string | null;
-    idCategoria: string | null;
+    idCategoria: number | null;
     telefono: string | null;
     direccion: string | null;
 }
@@ -28,7 +28,7 @@ export declare class Usuario extends Model<UsuarioAttributes, UsuarioCreationAtt
     localidad: string | null;
     telefono: string | null;
     direccion: string | null;
-    idCategoria: string | null;
+    idCategoria: number | null;
     categoria?: Categoria;
     roles?: UsuarioRol[];
     posiciones?: UsuarioPosicion[];
