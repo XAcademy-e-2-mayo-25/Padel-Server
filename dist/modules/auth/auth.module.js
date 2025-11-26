@@ -11,6 +11,7 @@ const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const google_strategy_1 = require("./strategies/google.strategy");
 const jwt_1 = require("@nestjs/jwt");
+const config_1 = require("@nestjs/config");
 const auth_service_1 = require("../../services/auth/auth.service");
 const auth_controller_1 = require("../../controllers/auth/auth.controller");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
@@ -23,9 +24,17 @@ exports.AuthModule = AuthModule = __decorate([
         imports: [
             usuarios_module_1.UsuariosModule,
             passport_1.PassportModule.register({ session: false }),
-            jwt_1.JwtModule.register({
-                secret: process.env.JWT_SECRET,
-                signOptions: { expiresIn: '1h' },
+            jwt_1.JwtModule.registerAsync({
+                imports: [config_1.ConfigModule],
+                useFactory: async (configService) => {
+                    const secret = configService.get('JWT_SECRET') || 'secretKey123';
+                    console.log('JWT Secret configurado:', secret);
+                    return {
+                        secret: secret,
+                        signOptions: { expiresIn: '1h' },
+                    };
+                },
+                inject: [config_1.ConfigService],
             }),
         ],
         providers: [auth_service_1.AuthService, google_strategy_1.GoogleStrategy, jwt_strategy_1.JwtStrategy],

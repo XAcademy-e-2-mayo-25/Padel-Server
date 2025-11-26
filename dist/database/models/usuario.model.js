@@ -15,17 +15,6 @@ const Categoria_model_1 = require("./Categoria.model");
 const usuariorol_model_1 = require("./usuariorol.model");
 const usuarioposicion_model_1 = require("./usuarioposicion.model");
 let Usuario = class Usuario extends sequelize_typescript_1.Model {
-    idUsuario;
-    nombres;
-    apellidos;
-    dni;
-    email;
-    fotoPerfil;
-    provincia;
-    localidad;
-    telefono;
-    direccion;
-    idCategoria;
     categoria;
     roles;
     posiciones;

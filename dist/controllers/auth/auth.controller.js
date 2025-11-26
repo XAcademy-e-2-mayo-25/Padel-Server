@@ -24,7 +24,12 @@ let AuthController = class AuthController {
         this.authService = authService;
     }
     verifyToken(req) {
-        return { valid: true, user: req.user };
+        console.log('req.user en verify:', req.user);
+        return {
+            valid: true,
+            id: req.user?.id,
+            email: req.user?.email
+        };
     }
     async googleAuth() {
     }

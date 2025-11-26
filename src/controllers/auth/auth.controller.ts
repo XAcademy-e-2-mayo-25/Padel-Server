@@ -10,10 +10,16 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {} 
 
   @Get('verify')
-@UseGuards(JwtAuthGuard)
-verifyToken(@Req() req) {
-  return { valid: true, user: req.user };
-}
+  @UseGuards(JwtAuthGuard)
+  verifyToken(@Req() req) {
+    console.log('req.user en verify:', req.user);
+    // req.user viene del JwtStrategy y contiene { id, email }
+    return { 
+      valid: true, 
+      id: req.user?.id, 
+      email: req.user?.email 
+    };
+  }
 
   @Get('google')
   @UseGuards(AuthGuard('google'))

@@ -27,7 +27,7 @@ services:
       MYSQL_USER: padel
       MYSQL_PASSWORD: padel
     ports:
-      - "3307:3306"  # 3307 externo, 3306 interno (mantenerlo así)
+      - "3309:3306"  # 3309 externo, 3306 interno (mantenerlo así)
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
