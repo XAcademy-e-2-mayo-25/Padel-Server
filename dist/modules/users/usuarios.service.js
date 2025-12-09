@@ -36,12 +36,18 @@ let UsuariosService = class UsuariosService {
     usuarioRolModel;
     usuarioPosModel;
     posicionModel;
+    rolModel;
+    estadoModel;
+    categoriaModel;
     sequelize;
-    constructor(usuarioModel, usuarioRolModel, usuarioPosModel, posicionModel, sequelize) {
+    constructor(usuarioModel, usuarioRolModel, usuarioPosModel, posicionModel, rolModel, estadoModel, categoriaModel, sequelize) {
         this.usuarioModel = usuarioModel;
         this.usuarioRolModel = usuarioRolModel;
         this.usuarioPosModel = usuarioPosModel;
         this.posicionModel = posicionModel;
+        this.rolModel = rolModel;
+        this.estadoModel = estadoModel;
+        this.categoriaModel = categoriaModel;
         this.sequelize = sequelize;
     }
     async findByEmail(email) {
@@ -169,7 +175,7 @@ let UsuariosService = class UsuariosService {
         const validos = [POS_NO_DEFINIDO, POS_DRIVE, POS_REVES];
         const invalidos = set.filter(id => !validos.includes(id));
         if (invalidos.length > 0)
-            throw new common_1.BadRequestException('Posiciones inválidas: ${invalidos.join(', ')}');
+            throw new common_1.BadRequestException('Posiciones inválidas: ${invalidos.join(\', \')}');
         await this.sequelize.transaction(async (t) => {
             await this.usuarioPosModel.destroy({ where: { idUsuario }, transaction: t });
             await this.usuarioPosModel.bulkCreate(set.map(idPosicion => ({ idUsuario, idPosicion })), { transaction: t });
@@ -195,7 +201,7 @@ let UsuariosService = class UsuariosService {
         const rolesValidos = [1, 2, 3];
         const invalidos = nuevo.filter((r) => !rolesValidos.includes(r));
         if (invalidos.length)
-            throw new common_1.BadRequestException('Roles inválidos: ${invalidos.join(', ')}');
+            throw new common_1.BadRequestException('Roles inválidos: ${invalidos.join(\', \')}');
         const mapa = new Map();
         (dto.estados ?? []).forEach((e) => mapa.set(e.idRol, { idEstado: e.idEstado, descripcion: e.descripcion }));
         const defaultEstado = dto.defaultEstado ?? ESTADO_PENDIENTE;
@@ -206,7 +212,10 @@ let UsuariosService = class UsuariosService {
         const toRemove = [...actualesSet].filter((r) => !nuevo.includes(r));
         await this.sequelize.transaction(async (t) => {
             if (toRemove.length) {
-                await this.usuarioRolModel.destroy({ where: { idUsuario, idRol: { [sequelize_2.Op.in]: toRemove } }, transaction: t });
+                await this.usuarioRolModel.destroy({
+                    where: { idUsuario, idRol: { [sequelize_2.Op.in]: toRemove } },
+                    transaction: t,
+                });
             }
             if (toAdd.length) {
                 const rows = toAdd.map((idRol) => {
@@ -309,6 +318,9 @@ exports.UsuariosService = UsuariosService = __decorate([
     __param(1, (0, sequelize_1.InjectModel)(usuariorol_model_1.UsuarioRol)),
     __param(2, (0, sequelize_1.InjectModel)(usuarioposicion_model_1.UsuarioPosicion)),
     __param(3, (0, sequelize_1.InjectModel)(posicion_model_1.Posicion)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, sequelize_typescript_1.Sequelize])
+    __param(4, (0, sequelize_1.InjectModel)(rol_model_1.Rol)),
+    __param(5, (0, sequelize_1.InjectModel)(Estado_model_1.Estado)),
+    __param(6, (0, sequelize_1.InjectModel)(Estado_model_1.Estado)),
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, sequelize_typescript_1.Sequelize])
 ], UsuariosService);
 //# sourceMappingURL=usuarios.service.js.map

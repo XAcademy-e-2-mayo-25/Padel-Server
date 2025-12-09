@@ -10,15 +10,9 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const sequelize_1 = require("@nestjs/sequelize");
-const usuario_model_1 = require("./database/models/usuario.model");
-const Categoria_model_1 = require("./database/models/Categoria.model");
-const rol_model_1 = require("./database/models/rol.model");
-const posicion_model_1 = require("./database/models/posicion.model");
-const Estado_model_1 = require("./database/models/Estado.model");
-const usuariorol_model_1 = require("./database/models/usuariorol.model");
-const usuarioposicion_model_1 = require("./database/models/usuarioposicion.model");
 const usuarios_module_1 = require("./modules/users/usuarios.module");
 const auth_module_1 = require("./modules/auth/auth.module");
+const clubs_module_1 = require("./modules/clubs/clubs.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -28,13 +22,12 @@ exports.AppModule = AppModule = __decorate([
             config_1.ConfigModule.forRoot({ isGlobal: true }),
             sequelize_1.SequelizeModule.forRoot({
                 dialect: 'mysql',
-                host: process.env.DB_HOST,
-                port: Number(process.env.DB_PORT),
+                host: process.env.DB_HOST || 'db',
+                port: Number(process.env.DB_PORT || 3306),
                 database: process.env.DB_NAME,
                 username: process.env.DB_USER,
                 password: process.env.DB_PASS,
-                models: [usuario_model_1.Usuario, Categoria_model_1.Categoria, rol_model_1.Rol, posicion_model_1.Posicion, Estado_model_1.Estado, usuariorol_model_1.UsuarioRol, usuarioposicion_model_1.UsuarioPosicion],
-                autoLoadModels: false,
+                autoLoadModels: true,
                 synchronize: false,
                 logging: false,
                 dialectOptions: {
@@ -42,6 +35,7 @@ exports.AppModule = AppModule = __decorate([
                 },
             }),
             usuarios_module_1.UsuariosModule,
+            clubs_module_1.ClubsModule,
             auth_module_1.AuthModule,
         ],
         controllers: [],

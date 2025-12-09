@@ -73,5 +73,10 @@ JWT_SECRET=Pegar KEY JWT
 5- Si los contenedores ya fueron creados y se han sembrado las seeds en las tablas levantar proyecto con: docker compose up
 
 6- Para eliminar los contenedores (por si se necesitan reconstruir en caso de modificar tablas/seeds o algun otro archivo que requiera reconstuir), usar los comandos:
-    6.A - docker compose down -v
-    6.B - docker compose up --build
+    6.A - docker compose down -v (borra todo el volumen completo)
+    6.B - docker compose build (compilación completa del back)
+    6.C - docker compose up (levanta el contenedor backend)
+    6.D - docker compose exec api npx sequelize-cli db:seed:all (desde otra consola para resembrar las seeds)
+    6.E - De aqui en adelante, solo levantar con docker compose up o docker compose up --build (en caso de instalar algo nuevo en el back) para mantener la persistencia en la bd.
+
+NOTA: Todos los comandos deben ser ejecutados desde la raiz del backend (donde se encuentra el archivo docker-compose.yml del back)

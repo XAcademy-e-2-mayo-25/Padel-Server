@@ -15,12 +15,15 @@ const usuario_model_1 = require("../../database/models/usuario.model");
 const usuariorol_model_1 = require("../../database/models/usuariorol.model");
 const usuarioposicion_model_1 = require("../../database/models/usuarioposicion.model");
 const posicion_model_1 = require("../../database/models/posicion.model");
+const rol_model_1 = require("../../database/models/rol.model");
+const Estado_model_1 = require("../../database/models/Estado.model");
+const Categoria_model_1 = require("../../database/models/Categoria.model");
 let UsuariosModule = class UsuariosModule {
 };
 exports.UsuariosModule = UsuariosModule;
 exports.UsuariosModule = UsuariosModule = __decorate([
     (0, common_1.Module)({
-        imports: [sequelize_1.SequelizeModule.forFeature([usuario_model_1.Usuario, usuariorol_model_1.UsuarioRol, usuarioposicion_model_1.UsuarioPosicion, posicion_model_1.Posicion])],
+        imports: [sequelize_1.SequelizeModule.forFeature([usuario_model_1.Usuario, usuariorol_model_1.UsuarioRol, usuarioposicion_model_1.UsuarioPosicion, posicion_model_1.Posicion, rol_model_1.Rol, Estado_model_1.Estado, Categoria_model_1.Categoria])],
         controllers: [usuarios_controller_1.UsuariosController],
         providers: [usuarios_service_1.UsuariosService],
         exports: [usuarios_service_1.UsuariosService],
