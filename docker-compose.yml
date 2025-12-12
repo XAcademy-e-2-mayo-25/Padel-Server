@@ -13,8 +13,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    # Ejecuta migraciones siempre pero no siembra y luego arranca Nest en modo dev
-    command: sh -c "npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && npm run start:dev"
+    # Ejecuta migraciones y luego arranca Nest en modo dev
+    # Los seeders se ejecutan solo la primera vez manualmente o con db:seed:undo:all && db:seed:all
+    command: sh -c "npx sequelize-cli db:migrate && npm run start:dev"
     tty: true  # para mantener logs activos
 
   db:
