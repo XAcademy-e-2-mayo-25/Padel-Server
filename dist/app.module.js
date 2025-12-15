@@ -13,6 +13,7 @@ const sequelize_1 = require("@nestjs/sequelize");
 const usuarios_module_1 = require("./modules/users/usuarios.module");
 const auth_module_1 = require("./modules/auth/auth.module");
 const clubs_module_1 = require("./modules/clubs/clubs.module");
+const reservas_module_1 = require("./modules/reservas/reservas.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -40,6 +41,7 @@ exports.AppModule = AppModule = __decorate([
             usuarios_module_1.UsuariosModule,
             clubs_module_1.ClubsModule,
             auth_module_1.AuthModule,
+            reservas_module_1.ReservasModule,
         ],
         controllers: [],
     })
