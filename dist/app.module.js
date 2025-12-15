@@ -13,13 +13,17 @@ const sequelize_1 = require("@nestjs/sequelize");
 const usuarios_module_1 = require("./modules/users/usuarios.module");
 const auth_module_1 = require("./modules/auth/auth.module");
 const clubs_module_1 = require("./modules/clubs/clubs.module");
+const reservas_module_1 = require("./modules/reservas/reservas.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            config_1.ConfigModule.forRoot({ isGlobal: true }),
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+                envFilePath: ['.env.local', '.env'],
+            }),
             sequelize_1.SequelizeModule.forRoot({
                 dialect: 'mysql',
                 host: process.env.DB_HOST || 'db',
@@ -37,6 +41,7 @@ exports.AppModule = AppModule = __decorate([
             usuarios_module_1.UsuariosModule,
             clubs_module_1.ClubsModule,
             auth_module_1.AuthModule,
+            reservas_module_1.ReservasModule,
         ],
         controllers: [],
     })

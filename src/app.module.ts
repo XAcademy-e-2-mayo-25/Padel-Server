@@ -5,11 +5,15 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { UsuariosModule } from './modules/users/usuarios.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClubsModule } from './modules/clubs/clubs.module';
+import { ReservasModule } from './modules/reservas/reservas.module';
 
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env.local', '.env'],
+    }),
     SequelizeModule.forRoot({
       dialect: 'mysql',
       host: process.env.DB_HOST || 'db',
@@ -27,6 +31,7 @@ import { ClubsModule } from './modules/clubs/clubs.module';
     UsuariosModule,
     ClubsModule,
     AuthModule,
+    ReservasModule,
   ],
   controllers: [],
 })

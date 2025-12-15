@@ -1,6 +1,8 @@
-//Reemplazo de config.json creado por npx sequelize-cli init a config.js para poder leer variables de entorno creadas en .env
+// Reemplazo de config.json creado por npx sequelize-cli init a config.js para poder leer variables de entorno creadas en .env
+const { config } = require('dotenv');
 
-require('dotenv').config();
+config({ path: '.env' });
+config({ path: '.env.local', override: true });
 
 module.exports = {
   development: {
