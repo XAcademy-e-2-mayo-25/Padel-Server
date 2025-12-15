@@ -9,7 +9,10 @@ import { ClubsModule } from './modules/clubs/clubs.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env.local', '.env'],
+    }),
     SequelizeModule.forRoot({
       dialect: 'mysql',
       host: process.env.DB_HOST || 'db',
