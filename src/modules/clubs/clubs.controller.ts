@@ -19,18 +19,15 @@ import {
   EditarClubDto,
   CrearCanchaDto,
   EditarCanchaDto,
-  CrearTurnoDto,
-  EditarTurnoDto,
-  AsignarTurnoCanchaDto,
-  QuitarTurnoCanchaDto,
-  ActualizarTurnoCanchaDto,
   CrearDatosPagoDto,
   ActualizarDatosPagoDto,
   ListarCanchasDto,
   ListarClubsDto,
   ListarDatosPagosDto,
-  ListarTurnosDto,
-  ListarTurnosCanchasDto,
+  CrearReservaTurnoDto,
+  EditarReservaTurnoDto,
+  ListarReservasTurnoDto,
+  PagarReservaTurnoDto,
 } from './dto';
 
 //Todos los endpoint de este controller carecen de guards/roles, falta configurarlos
@@ -93,62 +90,6 @@ export class ClubsController {
     return this.clubsService.editarCancha(id, dto);
   }
 
-// Endpoints TURNO
-
-  // Crear turno
-  @Post('turnos')
-  @HttpCode(HttpStatus.CREATED)
-  crearTurno(@Body() dto: CrearTurnoDto) {
-    return this.clubsService.crearTurno(dto);
-  }
-
-  // Listar turnos
-  @Get('turnos')
-  @HttpCode(HttpStatus.OK)
-  listarTurnos(@Query() query: ListarTurnosDto) {
-    return this.clubsService.listarTurnos(query);
-  }
-
-  // Editar turno
-  @Patch('turnos/:id')
-  @HttpCode(HttpStatus.OK)
-  editarTurno(@Param('id', ParseIntPipe) id: number, @Body() dto: EditarTurnoDto) {
-    return this.clubsService.editarTurno(id, dto);
-  }
-
-// Endpoints CANCHA–TURNO
-
-  // Asignar un turno a una cancha
-  @Post('turnos/asignar')
-  @HttpCode(HttpStatus.CREATED)
-  asignarTurnoCancha(@Body() dto: AsignarTurnoCanchaDto) {
-    return this.clubsService.asignarTurnoCancha(dto);
-  }
-
-  // Listar turnos por cancha
-  @Get('turnos/canchas')
-  @HttpCode(HttpStatus.OK)
-  listarTurnosCancha(@Query() query: ListarTurnosCanchasDto) {
-    return this.clubsService.listarTurnosCancha(query);
-  }
-
-  // Actualizar relación cancha-turno
-  @Patch('turnos/cancha/:idCancha/:idTurno')
-  @HttpCode(HttpStatus.OK)
-  actualizarTurnoCancha(
-    @Param('idCancha', ParseIntPipe) idCancha: number,
-    @Param('idTurno', ParseIntPipe) idTurno: number,
-    @Body() dto: ActualizarTurnoCanchaDto,
-  ) {
-    return this.clubsService.actualizarTurnoCancha(idCancha, idTurno, dto);
-  }
-
-  // Quitar un turno de una cancha
-  @Post('turnos/desasignar')
-  @HttpCode(HttpStatus.OK)
-  quitarTurnoCancha(@Body() dto: QuitarTurnoCanchaDto) {
-    return this.clubsService.quitarTurnoCancha(dto);
-  }
 
   // Endpoints DATOS DE PAGO
 
@@ -174,5 +115,35 @@ export class ClubsController {
     @Body() dto: ActualizarDatosPagoDto,
   ) {
     return this.clubsService.actualizarDatosPago(idDatosPago, dto);
+  }
+
+  // Endpoints RESERVA TURNO
+
+  // Crear reserva
+  @Post('reservas')
+  @HttpCode(HttpStatus.CREATED)
+  crearReserva(@Body() dto: CrearReservaTurnoDto) {
+    return this.clubsService.crearReserva(dto);
+  }
+
+  // Listar reservas
+  @Get('reservas')
+  @HttpCode(HttpStatus.OK)
+  listarReservas(@Query() query: ListarReservasTurnoDto) {
+    return this.clubsService.listarReservas(query);
+  }
+
+  // Editar reserva
+  @Patch('reservas/:id')
+  @HttpCode(HttpStatus.OK)
+  editarReserva(@Param('id', ParseIntPipe) id: number, @Body() dto: EditarReservaTurnoDto) {
+    return this.clubsService.editarReserva(id, dto);
+  }
+
+  // Pagar reserva
+  @Patch('reservas/:id/pagar')
+  @HttpCode(HttpStatus.OK)
+  pagarReserva(@Param('id', ParseIntPipe) id: number, @Body() dto: PagarReservaTurnoDto) {
+    return this.clubsService.pagarReserva(id, dto);
   }
 }
