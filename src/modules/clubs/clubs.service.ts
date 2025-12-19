@@ -30,7 +30,7 @@ import {
 //estados
 const ESTADO_PENDIENTE = 1;
 const ESTADO_HABILITADO = 2;
-const ESTADO_BANEADO   = 3;
+const ESTADO_BANEADO = 3;
 
 @Injectable()
 export class ClubsService {
@@ -114,17 +114,17 @@ export class ClubsService {
     const order: any[] = [[q.sortBy ?? 'idClub', (q.sortDir ?? 'ASC').toUpperCase()]];
 
     const where: any = {};
-    if (q.cuitCuil) where.cuitCuil = { [Op.like]: '%${q.cuitCuil}%' };
-    if (q.provincia) where.provincia = { [Op.like]: '%${q.provincia}%' };
-    if (q.localidad) where.localidad = { [Op.like]: '%${q.localidad}%' };
+    if (q.cuitCuil) where.cuitCuil = { [Op.like]: `%${q.cuitCuil}%` };
+    if (q.provincia) where.provincia = { [Op.like]: `%${q.provincia}%` };
+    if (q.localidad) where.localidad = { [Op.like]: `%${q.localidad}%` };
     if (q.idEstadoClub) where.idEstadoClub = q.idEstadoClub;
     if (q.idUsuario) where.idUsuario = q.idUsuario;
 
     // nombre busca en razonSocial OR nombreFantasia
     if (q.nombre) {
       where[Op.or] = [
-        { razonSocial: { [Op.like]: '%${q.nombre}%' } },
-        { nombreFantasia: { [Op.like]: '%${q.nombre}%' } },
+        { razonSocial: { [Op.like]: `%${q.nombre}%` } },
+        { nombreFantasia: { [Op.like]: `%${q.nombre}%` } },
       ];
     }
 
@@ -146,8 +146,11 @@ export class ClubsService {
     };
   }
 
-  // METODOS CANCHA
-  async crearCancha(dto: CrearCanchaDto) {
+  // METODOS CANCHA (para un club especifico)
+
+  async crearCancha(dto: CrearCanchaDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     // validar club
     const club = await this.clubModel.findByPk(dto.idClub);
     if (!club) throw new NotFoundException('Club no encontrado');
@@ -157,31 +160,39 @@ export class ClubsService {
       denominacion: dto.denominacion,
       cubierta: dto.cubierta ?? null,
       observaciones: dto.observaciones ?? null,
-      diasSemana: dto.diasSemana,
-      horaDesde: dto.horaDesde,
-      horaHasta: dto.horaHasta,
-      rangoSlotMinutos: dto.rangoSlotMinutos,
-      precio: dto.precio,
+      diasSemana: (dto as any).diasSemana,
+      horaDesde: (dto as any).horaDesde,
+      horaHasta: (dto as any).horaHasta,
+      rangoSlotMinutos: (dto as any).rangoSlotMinutos,
+      precio: (dto as any).precio,
     });
 
     const withClub = await this.canchaModel.findByPk(nueva.idCancha, { include: [Club] });
     return { mensaje: 'Cancha creada correctamente', cancha: withClub };
   }
 
-  async editarCancha(idCancha: number, dto: EditarCanchaDto) {
+  async editarCancha(idCancha: number, dto: EditarCanchaDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const cancha = await this.canchaModel.findByPk(idCancha);
     if (!cancha) throw new NotFoundException('Cancha no encontrada');
 
+    //la cancha debe pertenecer al club
+    if (cancha.idClub !== dto.idClub) {
+      throw new BadRequestException('La cancha no pertenece a ese club');
+    }
+
     const cambios: Partial<Cancha> = {
-      idClub: dto.idClub ?? cancha.idClub,
+      // NO permitir mover la cancha de club por este endpoint: se fuerza al idClub de la ruta
+      idClub: dto.idClub,
       denominacion: dto.denominacion ?? cancha.denominacion,
-      cubierta: dto.cubierta ?? cancha.cubierta,
+      cubierta: typeof dto.cubierta === 'boolean' ? dto.cubierta : cancha.cubierta,
       observaciones: dto.observaciones ?? cancha.observaciones,
-      diasSemana: dto.diasSemana ?? cancha.diasSemana,
-      horaDesde: dto.horaDesde ?? cancha.horaDesde,
-      horaHasta: dto.horaHasta ?? cancha.horaHasta,
-      rangoSlotMinutos: dto.rangoSlotMinutos ?? cancha.rangoSlotMinutos,
-      precio: dto.precio ?? cancha.precio,
+      diasSemana: (dto as any).diasSemana ?? (cancha as any).diasSemana,
+      horaDesde: (dto as any).horaDesde ?? (cancha as any).horaDesde,
+      horaHasta: (dto as any).horaHasta ?? (cancha as any).horaHasta,
+      rangoSlotMinutos: (dto as any).rangoSlotMinutos ?? (cancha as any).rangoSlotMinutos,
+      precio: (dto as any).precio ?? (cancha as any).precio,
     };
 
     await this.canchaModel.update(cambios, { where: { idCancha } });
@@ -190,32 +201,33 @@ export class ClubsService {
     return { mensaje: 'Cancha actualizada correctamente', cancha: actualizado };
   }
 
-  async listarCanchas(q: ListarCanchasDto) {
+  async listarCanchas(q: ListarCanchasDto & { idClub?: number }) {
+    if (!q.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const page = q.page ?? 1;
     const limit = q.limit ?? 10;
     const offset = (page - 1) * limit;
     const order: any[] = [[q.sortBy ?? 'idCancha', (q.sortDir ?? 'ASC').toUpperCase()]];
 
-    const where: any = {};
-    if (q.idClub) where.idClub = q.idClub;
+    const where: any = { idClub: q.idClub };
+
     if (q.denominacion) where.denominacion = { [Op.like]: `%${q.denominacion}%` };
     if (typeof q.cubierta === 'boolean') where.cubierta = q.cubierta;
-    if (q.rangoSlotMinutos) where.rangoSlotMinutos = q.rangoSlotMinutos;
-    if (q.precioMin || q.precioMax) {
+    if ((q as any).rangoSlotMinutos) where.rangoSlotMinutos = (q as any).rangoSlotMinutos;
+
+    if ((q as any).precioMin || (q as any).precioMax) {
       where.precio = {
-        ...(q.precioMin ? { [Op.gte]: q.precioMin } : {}),
-        ...(q.precioMax ? { [Op.lte]: q.precioMax } : {}),
+        ...((q as any).precioMin ? { [Op.gte]: (q as any).precioMin } : {}),
+        ...((q as any).precioMax ? { [Op.lte]: (q as any).precioMax } : {}),
       };
     }
+
     // filtro por día habilitado: (diasSemana & (1 << dia)) != 0
-    if (typeof q.dia === 'number') {
-      const mask = 1 << q.dia;
+    if (typeof (q as any).dia === 'number') {
+      const mask = 1 << (q as any).dia;
       where[Op.and] = [
         ...(where[Op.and] ?? []),
-        Sequelize.where(
-          Sequelize.literal('(diasSemana & ${mask})'),
-          { [Op.ne]: 0 },
-        ),
+        Sequelize.where(Sequelize.literal(`(diasSemana & ${mask})`), { [Op.ne]: 0 }),
       ];
     }
 
@@ -237,8 +249,11 @@ export class ClubsService {
     };
   }
 
-  // METODOS DATOS PAGO
-  async crearDatosPago(dto: CrearDatosPagoDto) {
+  // METODOS DATOS PAGO (de un idClub)
+
+  async crearDatosPago(dto: CrearDatosPagoDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const club = await this.clubModel.findByPk(dto.idClub);
     if (!club) throw new NotFoundException('Club no encontrado');
 
@@ -259,12 +274,20 @@ export class ClubsService {
     return { mensaje: 'Datos de pago creados', datosPago: creado };
   }
 
-  async actualizarDatosPago(idDatosPago: number, dto: ActualizarDatosPagoDto) {
+  async actualizarDatosPago(idDatosPago: number, dto: ActualizarDatosPagoDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const row = await this.datosPagoModel.findByPk(idDatosPago);
     if (!row) throw new NotFoundException('Datos de pago no encontrados');
 
+    //debe pertenecer al club
+    if (row.idClub !== dto.idClub) {
+      throw new BadRequestException('Los datos de pago no pertenecen a ese club');
+    }
+
     const cambios: Partial<DatosPago> = {
-      idClub: dto.idClub ?? row.idClub,
+      // NO permitir mover el método de pago de club: se fuerza al idClub de la ruta
+      idClub: dto.idClub,
       metodoPago: dto.metodoPago ?? row.metodoPago,
       cbu: dto.cbu ?? row.cbu,
       cvu: dto.cvu ?? row.cvu,
@@ -283,14 +306,15 @@ export class ClubsService {
     return { mensaje: 'Datos de pago actualizados', datosPago: actualizado };
   }
 
-  async listarDatosPagos(q: ListarDatosPagosDto) {
+  async listarDatosPagos(q: ListarDatosPagosDto & { idClub?: number }) {
+    if (!q.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const page = q.page ?? 1;
     const limit = q.limit ?? 10;
     const offset = (page - 1) * limit;
     const order: any[] = [[q.sortBy ?? 'idDatosPago', (q.sortDir ?? 'ASC').toUpperCase()]];
 
-    const where: any = {};
-    if (q.idClub) where.idClub = q.idClub;
+    const where: any = { idClub: q.idClub };
     if (q.metodoPago) where.metodoPago = { [Op.like]: `%${q.metodoPago}%` };
     if (typeof q.activo === 'boolean') where.activo = q.activo;
 
@@ -312,7 +336,8 @@ export class ClubsService {
     };
   }
 
-  // METODOS RESERVA TURNO
+  // METODOS RESERVA TURNO (de un idClub)
+
   private async assertCanchaAbiertaYSlotsOk(cancha: Cancha, fechaISO: string, slotIndexDesde: number, slotCount: number) {
     if (slotIndexDesde < 0 || slotCount <= 0) {
       throw new BadRequestException('slotIndexDesde >= 0 y slotCount > 0 requeridos');
@@ -321,10 +346,10 @@ export class ClubsService {
     const d = new Date(fechaISO);
     const dia = d.getUTCDay(); // 0..6
     const mask = 1 << dia;
-    if ((cancha.diasSemana & mask) === 0) {
+    if (((cancha as any).diasSemana & mask) === 0) {
       throw new BadRequestException('La cancha no abre ese día');
     }
-    //la consistencia de horarios la resuelve el front generando slots válidos.
+    // la consistencia de horarios la resuelve el front generando slots válidos.
   }
 
   private async haySolapamiento(
@@ -339,10 +364,7 @@ export class ClubsService {
       fecha,
       [Op.and]: [
         { slotIndexDesde: { [Op.lt]: hastaExcl } },
-        Sequelize.where(
-          Sequelize.literal('(slotIndexDesde + slotCount)'),
-          { [Op.gt]: desde },
-        ),
+        Sequelize.where(Sequelize.literal('(slotIndexDesde + slotCount)'), { [Op.gt]: desde }),
       ],
     };
     if (excluirId) where.idReservaTurno = { [Op.ne]: excluirId };
@@ -350,9 +372,16 @@ export class ClubsService {
     return !!existente;
   }
 
-  async crearReserva(dto: CrearReservaTurnoDto) {
+  async crearReserva(dto: CrearReservaTurnoDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const cancha = await this.canchaModel.findByPk(dto.idCancha);
     if (!cancha) throw new NotFoundException('Cancha no encontrada');
+
+    //la cancha debe pertenecer al club
+    if (cancha.idClub !== dto.idClub) {
+      throw new BadRequestException('La cancha no pertenece a ese club');
+    }
 
     const jugador = await this.usuarioModel.findByPk(dto.idJugador);
     if (!jugador) throw new NotFoundException('Jugador no encontrado');
@@ -365,7 +394,7 @@ export class ClubsService {
     const solapa = await this.haySolapamiento(cancha.idCancha, dto.fecha, from, toExcl);
     if (solapa) throw new BadRequestException('El rango de slots ya está reservado');
 
-    const precioAplicado = cancha.precio * dto.slotCount;
+    const precioAplicado = (cancha as any).precio * dto.slotCount;
 
     const creada = await this.reservaModel.create({
       idCancha: cancha.idCancha,
@@ -380,12 +409,19 @@ export class ClubsService {
     return { mensaje: 'Reserva creada', reserva: creada };
   }
 
-  async editarReserva(idReserva: number, dto: EditarReservaTurnoDto) {
+  async editarReserva(idReserva: number, dto: EditarReservaTurnoDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const res = await this.reservaModel.findByPk(idReserva);
     if (!res) throw new NotFoundException('Reserva no encontrada');
 
     const cancha = await this.canchaModel.findByPk(dto.idCancha ?? res.idCancha);
     if (!cancha) throw new NotFoundException('Cancha no encontrada');
+
+    //la reserva (por su cancha) debe pertenecer al club
+    if (cancha.idClub !== dto.idClub) {
+      throw new BadRequestException('La reserva no pertenece a ese club');
+    }
 
     const fecha = dto.fecha ?? res.fecha;
     const slotIndexDesde = typeof dto.slotIndexDesde === 'number' ? dto.slotIndexDesde : res.slotIndexDesde;
@@ -405,10 +441,7 @@ export class ClubsService {
       fecha,
       slotIndexDesde,
       slotCount,
-      precioAplicado:
-        typeof dto.precioAplicado === 'number'
-          ? dto.precioAplicado
-          : res.precioAplicado,
+      precioAplicado: typeof dto.precioAplicado === 'number' ? dto.precioAplicado : res.precioAplicado,
       pagado: typeof dto.pagado === 'boolean' ? dto.pagado : res.pagado,
     };
 
@@ -418,25 +451,54 @@ export class ClubsService {
     return { mensaje: 'Reserva actualizada', reserva: actualizado };
   }
 
-  async listarReservas(q: ListarReservasTurnoDto) {
+  async listarReservas(q: ListarReservasTurnoDto & { idClub?: number }) {
+    if (!q.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const page = q.page ?? 1;
     const limit = q.limit ?? 10;
     const offset = (page - 1) * limit;
     const order: any[] = [[q.sortBy ?? 'idReservaTurno', (q.sortDir ?? 'ASC').toUpperCase()]];
 
-    const where: any = {};
-    if (q.idCancha) where.idCancha = q.idCancha;
+    // alcance por club: restringimos por canchas del club
+    // - si viene idCancha, validamos pertenencia
+    // - si no viene, filtra por todas las canchas del club
+    let canchasIds: number[] = [];
+
+    if (q.idCancha) {
+      const cancha = await this.canchaModel.findByPk(q.idCancha);
+      if (!cancha) throw new NotFoundException('Cancha no encontrada');
+      if (cancha.idClub !== q.idClub) throw new BadRequestException('La cancha no pertenece a ese club');
+      canchasIds = [q.idCancha];
+    } else {
+      const rows = await this.canchaModel.findAll({
+        where: { idClub: q.idClub },
+        attributes: ['idCancha'],
+      });
+      canchasIds = rows.map((r: any) => r.idCancha);
+      // si el club no tiene canchas, devuelve vacío sin romper
+      if (canchasIds.length === 0) {
+        return { page, limit, total: 0, totalPages: 0, items: [] };
+      }
+    }
+
+    const where: any = {
+      idCancha: { [Op.in]: canchasIds },
+    };
+
     if (q.idJugador) where.idJugador = q.idJugador;
     if (typeof q.pagado === 'boolean') where.pagado = q.pagado;
+
     if (q.fechaDesde || q.fechaHasta) {
       where.fecha = {
         ...(q.fechaDesde ? { [Op.gte]: q.fechaDesde } : {}),
         ...(q.fechaHasta ? { [Op.lte]: q.fechaHasta } : {}),
       };
     }
+
     if (typeof q.slotIndexDesde === 'number') {
       where.slotIndexDesde = q.slotIndexDesde;
     }
+
     if (q.slotCountMin || q.slotCountMax) {
       where.slotCount = {
         ...(q.slotCountMin ? { [Op.gte]: q.slotCountMin } : {}),
@@ -461,9 +523,16 @@ export class ClubsService {
     };
   }
 
-  async pagarReserva(idReserva: number, dto: PagarReservaTurnoDto) {
+  async pagarReserva(idReserva: number, dto: PagarReservaTurnoDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const res = await this.reservaModel.findByPk(idReserva);
     if (!res) throw new NotFoundException('Reserva no encontrada');
+
+    //validar que la reserva pertenece al club via cancha
+    const cancha = await this.canchaModel.findByPk(res.idCancha);
+    if (!cancha) throw new NotFoundException('Cancha no encontrada');
+    if (cancha.idClub !== dto.idClub) throw new BadRequestException('La reserva no pertenece a ese club');
 
     const cambios: Partial<ReservaTurno> = {
       pagado: typeof dto.pagado === 'boolean' ? dto.pagado : true,

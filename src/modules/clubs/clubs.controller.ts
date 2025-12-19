@@ -37,7 +37,7 @@ import {
 export class ClubsController {
   constructor(private readonly clubsService: ClubsService) {}
 
-// Endpoints CLUB
+  // Endpoints CLUB
 
   // Crear club
   @Post()
@@ -67,83 +67,95 @@ export class ClubsController {
     return this.clubsService.editarClub(id, dto);
   }
 
-// Endpoints CANCHA
+  // Endpoints CANCHA (por club)
 
   // Crear cancha
-  @Post('canchas')
+  @Post(':idClub/canchas')
   @HttpCode(HttpStatus.CREATED)
-  crearCancha(@Body() dto: CrearCanchaDto) {
-    return this.clubsService.crearCancha(dto);
+  crearCancha(@Param('idClub', ParseIntPipe) idClub: number, @Body() dto: CrearCanchaDto) {
+    return this.clubsService.crearCancha({ ...dto, idClub });
   }
 
   // Listar canchas
-  @Get('canchas')
+  @Get(':idClub/canchas')
   @HttpCode(HttpStatus.OK)
-  listarCanchas(@Query() query: ListarCanchasDto) {
-    return this.clubsService.listarCanchas(query);
+  listarCanchas(@Param('idClub', ParseIntPipe) idClub: number, @Query() query: ListarCanchasDto) {
+    return this.clubsService.listarCanchas({ ...query, idClub });
   }
 
   // Editar cancha
-  @Patch('canchas/:id')
+  @Patch(':idClub/canchas/:id')
   @HttpCode(HttpStatus.OK)
-  editarCancha(@Param('id', ParseIntPipe) id: number, @Body() dto: EditarCanchaDto) {
-    return this.clubsService.editarCancha(id, dto);
+  editarCancha(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: EditarCanchaDto,
+  ) {
+    return this.clubsService.editarCancha(id, { ...dto, idClub });
   }
 
-
-  // Endpoints DATOS DE PAGO
+  // Endpoints DATOS DE PAGO (por club)
 
   // Crear método de pago
-  @Post('datos-pago')
+  @Post(':idClub/datos-pago')
   @HttpCode(HttpStatus.CREATED)
-  crearDatosPago(@Body() dto: CrearDatosPagoDto) {
-    return this.clubsService.crearDatosPago(dto);
+  crearDatosPago(@Param('idClub', ParseIntPipe) idClub: number, @Body() dto: CrearDatosPagoDto) {
+    return this.clubsService.crearDatosPago({ ...dto, idClub });
   }
 
   // Listar métodos de pago
-  @Get('datos-pago')
+  @Get(':idClub/datos-pago')
   @HttpCode(HttpStatus.OK)
-  listarDatosPagos(@Query() query: ListarDatosPagosDto) {
-    return this.clubsService.listarDatosPagos(query);
+  listarDatosPagos(@Param('idClub', ParseIntPipe) idClub: number, @Query() query: ListarDatosPagosDto) {
+    return this.clubsService.listarDatosPagos({ ...query, idClub });
   }
 
   // Actualizar método de pago
-  @Patch('datos-pago/:id')
+  @Patch(':idClub/datos-pago/:id')
   @HttpCode(HttpStatus.OK)
   actualizarDatosPago(
+    @Param('idClub', ParseIntPipe) idClub: number,
     @Param('id', ParseIntPipe) idDatosPago: number,
     @Body() dto: ActualizarDatosPagoDto,
   ) {
-    return this.clubsService.actualizarDatosPago(idDatosPago, dto);
+    return this.clubsService.actualizarDatosPago(idDatosPago, { ...dto, idClub });
   }
 
-  // Endpoints RESERVA TURNO
+  // Endpoints RESERVA TURNO (por club)
 
   // Crear reserva
-  @Post('reservas')
+  @Post(':idClub/reservas')
   @HttpCode(HttpStatus.CREATED)
-  crearReserva(@Body() dto: CrearReservaTurnoDto) {
-    return this.clubsService.crearReserva(dto);
+  crearReserva(@Param('idClub', ParseIntPipe) idClub: number, @Body() dto: CrearReservaTurnoDto) {
+    return this.clubsService.crearReserva({ ...dto, idClub } as any);
   }
 
   // Listar reservas
-  @Get('reservas')
+  @Get(':idClub/reservas')
   @HttpCode(HttpStatus.OK)
-  listarReservas(@Query() query: ListarReservasTurnoDto) {
-    return this.clubsService.listarReservas(query);
+  listarReservas(@Param('idClub', ParseIntPipe) idClub: number, @Query() query: ListarReservasTurnoDto) {
+    return this.clubsService.listarReservas({ ...query, idClub } as any);
   }
 
   // Editar reserva
-  @Patch('reservas/:id')
+  @Patch(':idClub/reservas/:id')
   @HttpCode(HttpStatus.OK)
-  editarReserva(@Param('id', ParseIntPipe) id: number, @Body() dto: EditarReservaTurnoDto) {
-    return this.clubsService.editarReserva(id, dto);
+  editarReserva(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: EditarReservaTurnoDto,
+  ) {
+    return this.clubsService.editarReserva(id, { ...dto, idClub } as any);
   }
 
   // Pagar reserva
-  @Patch('reservas/:id/pagar')
+  @Patch(':idClub/reservas/:id/pagar')
   @HttpCode(HttpStatus.OK)
-  pagarReserva(@Param('id', ParseIntPipe) id: number, @Body() dto: PagarReservaTurnoDto) {
-    return this.clubsService.pagarReserva(id, dto);
+  pagarReserva(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: PagarReservaTurnoDto,
+  ) {
+    return this.clubsService.pagarReserva(id, { ...dto, idClub } as any);
   }
 }
