@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsDateString, IsIn, IsInt, IsOptional, Min } from 'class-validator';
-import { ReservaEstado } from '../../../database/models/reserva.model';
+import type { ReservaEstado } from '../../../database/models/reserva.model';
 
 export class ListarReservasDto {
   @IsOptional()

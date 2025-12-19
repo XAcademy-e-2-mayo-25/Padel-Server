@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsIn, IsOptional, IsString, Length } from 'class-validator';
-import { ReservaEstado } from '../../../database/models/reserva.model';
+import type { ReservaEstado } from '../../../database/models/reserva.model';
 
 const ESTADOS_PERMITIDOS: ReservaEstado[] = ['pendiente', 'confirmada', 'cancelada', 'finalizada'];
 
