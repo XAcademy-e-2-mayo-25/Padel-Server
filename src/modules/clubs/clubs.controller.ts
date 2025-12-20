@@ -20,6 +20,7 @@ import {
   CrearCanchaDto,
   EditarCanchaDto,
   CrearTurnoDto,
+  CrearSlotDto,
   EditarTurnoDto,
   AsignarTurnoCanchaDto,
   QuitarTurnoCanchaDto,
@@ -54,13 +55,6 @@ export class ClubsController {
   @HttpCode(HttpStatus.OK)
   listarClubs(@Query() query: ListarClubsDto) {
     return this.clubsService.listarClubs(query);
-  }
-
-  // Obtener club por id
-  @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  obtenerClub(@Param('id', ParseIntPipe) id: number) {
-    return this.clubsService.obtenerClub(id);
   }
 
   // Editar club
@@ -100,6 +94,13 @@ export class ClubsController {
   @HttpCode(HttpStatus.CREATED)
   crearTurno(@Body() dto: CrearTurnoDto) {
     return this.clubsService.crearTurno(dto);
+  }
+
+  // Crear slot completo (turno + asignación a cancha)
+  @Post('slots')
+  @HttpCode(HttpStatus.CREATED)
+  crearSlot(@Body() dto: CrearSlotDto) {
+    return this.clubsService.crearSlot(dto);
   }
 
   // Listar turnos
@@ -174,5 +175,12 @@ export class ClubsController {
     @Body() dto: ActualizarDatosPagoDto,
   ) {
     return this.clubsService.actualizarDatosPago(idDatosPago, dto);
+  }
+
+  // Obtener club por id (ubicado al final para evitar conflictos con rutas estáticas)
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  obtenerClub(@Param('id', ParseIntPipe) id: number) {
+    return this.clubsService.obtenerClub(id);
   }
 }

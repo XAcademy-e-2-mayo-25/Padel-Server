@@ -33,6 +33,12 @@ export class ReservasController {
     return this.reservasService.listarReservas(query);
   }
 
+  @Get('canchas')
+  @HttpCode(HttpStatus.OK)
+  listarCanchasRegistradas() {
+    return this.reservasService.listarCanchasRegistradas();
+  }
+
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   obtenerReserva(@Param('id', ParseIntPipe) idReserva: number) {

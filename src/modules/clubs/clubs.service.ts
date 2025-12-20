@@ -18,6 +18,7 @@ import {
   CrearCanchaDto,
   EditarCanchaDto,
   CrearTurnoDto,
+  CrearSlotDto,
   EditarTurnoDto,
   AsignarTurnoCanchaDto,
   QuitarTurnoCanchaDto,
@@ -232,6 +233,58 @@ export class ClubsService {
     });
 
     return { mensaje: 'Turno creado correctamente', turno: creado };
+  }
+
+  async crearSlot(dto: CrearSlotDto) {
+    const club = await this.clubModel.findByPk(dto.idClub);
+    if (!club) throw new NotFoundException('Club no encontrado');
+
+    const cancha = await this.canchaModel.findByPk(dto.idCancha);
+    if (!cancha) throw new NotFoundException('Cancha no encontrada');
+
+    if (cancha.idClub !== dto.idClub) {
+      throw new BadRequestException('La cancha no pertenece al club indicado');
+    }
+
+    let turno: Turno | null = null;
+
+    if (dto.idTurno) {
+      turno = await this.turnoModel.findByPk(dto.idTurno);
+      if (!turno) throw new NotFoundException('Turno no encontrado');
+      if (turno.idClub !== dto.idClub) {
+        throw new BadRequestException('El turno no pertenece al club indicado');
+      }
+    } else {
+      if (!dto.horaDesde || !dto.horaHasta) {
+        throw new BadRequestException('Debe indicar horaDesde y horaHasta para crear un turno nuevo');
+      }
+
+      turno = await this.turnoModel.create({
+        idClub: dto.idClub,
+        fecha: dto.fecha ?? null,
+        diaSemana: dto.diaSemana ?? null,
+        horaDesde: dto.horaDesde,
+        horaHasta: dto.horaHasta,
+      });
+    }
+
+    const canchaTurno = await this.canchaTurnoModel.create({
+      idClub: dto.idClub,
+      idCancha: dto.idCancha,
+      idTurno: turno.idTurno,
+      disponible: typeof dto.disponible === 'boolean' ? dto.disponible : true,
+      precio: typeof dto.precio === 'number' ? dto.precio : 0,
+    });
+
+    const turnoConRelaciones = await this.turnoModel.findByPk(turno.idTurno, {
+      include: [Club],
+    });
+
+    return {
+      mensaje: 'Slot creado correctamente',
+      turno: turnoConRelaciones,
+      canchaTurno,
+    };
   }
 
   async editarTurno(idTurno: number, dto: EditarTurnoDto) {

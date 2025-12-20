@@ -22,6 +22,7 @@ export class ReservasService {
     @InjectModel(CanchaTurno) private readonly canchaTurnoModel: typeof CanchaTurno,
     @InjectModel(Usuario) private readonly usuarioModel: typeof Usuario,
     @InjectModel(Turno) private readonly turnoModel: typeof Turno,
+    @InjectModel(Cancha) private readonly canchaModel: typeof Cancha,
   ) {}
 
   private readonly includeReserva = [
@@ -167,6 +168,17 @@ export class ReservasService {
     return {
       mensaje: 'Reserva actualizada correctamente',
       reserva: actualizada,
+    };
+  }
+
+  async listarCanchasRegistradas() {
+    const canchas = await this.canchaModel.findAll({
+      include: [{ model: Club }],
+      order: [['idCancha', 'ASC']],
+    });
+    return {
+      total: canchas.length,
+      items: canchas,
     };
   }
 }

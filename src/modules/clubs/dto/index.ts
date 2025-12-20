@@ -3,6 +3,7 @@ export * from './editar-club.dto';
 export * from './crear-cancha.dto';
 export * from './editar-cancha.dto';
 export * from './crear-turno.dto';
+export * from './crear-slot.dto';
 export * from './editar-turno.dto';
 export * from './asignar-turno-cancha.dto';
 export * from './quitar-turno-cancha.dto';
