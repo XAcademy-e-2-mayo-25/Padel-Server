@@ -18,12 +18,13 @@ const posicion_model_1 = require("../../database/models/posicion.model");
 const rol_model_1 = require("../../database/models/rol.model");
 const Estado_model_1 = require("../../database/models/Estado.model");
 const Categoria_model_1 = require("../../database/models/Categoria.model");
+const clubs_module_1 = require("../clubs/clubs.module");
 let UsuariosModule = class UsuariosModule {
 };
 exports.UsuariosModule = UsuariosModule;
 exports.UsuariosModule = UsuariosModule = __decorate([
     (0, common_1.Module)({
-        imports: [sequelize_1.SequelizeModule.forFeature([usuario_model_1.Usuario, usuariorol_model_1.UsuarioRol, usuarioposicion_model_1.UsuarioPosicion, posicion_model_1.Posicion, rol_model_1.Rol, Estado_model_1.Estado, Categoria_model_1.Categoria])],
+        imports: [sequelize_1.SequelizeModule.forFeature([usuario_model_1.Usuario, usuariorol_model_1.UsuarioRol, usuarioposicion_model_1.UsuarioPosicion, posicion_model_1.Posicion, rol_model_1.Rol, Estado_model_1.Estado, Categoria_model_1.Categoria]), clubs_module_1.ClubsModule],
         controllers: [usuarios_controller_1.UsuariosController],
         providers: [usuarios_service_1.UsuariosService],
         exports: [usuarios_service_1.UsuariosService],

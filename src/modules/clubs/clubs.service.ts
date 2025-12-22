@@ -543,4 +543,29 @@ export class ClubsService {
 
     return { mensaje: 'Reserva marcada como pagada', reserva: actualizado };
   }
+
+  async listarMisPartidos(idJugador: number) {
+  const hoy = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+  const items = await this.reservaModel.findAll({
+    where: {
+      idJugador,
+      pagado: true,
+      fecha: { [Op.gte]: hoy }, 
+    },
+    include: [
+      {
+        model: this.canchaModel,
+        attributes: ['idCancha', 'denominacion'],
+      },
+    ],
+    order: [
+      ['fecha', 'ASC'],
+      ['slotIndexDesde', 'ASC'],
+    ],
+  });
+
+  return items;
+}
+
 }

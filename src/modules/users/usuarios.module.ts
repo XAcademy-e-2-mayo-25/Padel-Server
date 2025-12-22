@@ -12,10 +12,11 @@ import { Posicion } from '../../database/models/posicion.model';
 import { Rol } from '../../database/models/rol.model';
 import { Estado } from '../../database/models/Estado.model';
 import { Categoria } from 'src/database/models/Categoria.model';
+import { ClubsModule } from '../clubs/clubs.module';
 
 //composicion del modulo con los model que actuan en la creacion de un usuario, el controlador y los servicios
 @Module({
-  imports: [SequelizeModule.forFeature([Usuario, UsuarioRol, UsuarioPosicion, Posicion, Rol, Estado, Categoria])],
+  imports: [SequelizeModule.forFeature([Usuario, UsuarioRol, UsuarioPosicion, Posicion, Rol, Estado, Categoria]), ClubsModule],
   controllers: [UsuariosController],
   providers: [UsuariosService],
   exports: [UsuariosService],

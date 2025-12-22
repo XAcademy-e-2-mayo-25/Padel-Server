@@ -62,6 +62,10 @@ let UsuariosController = class UsuariosController {
             usuario: req.user,
         };
     }
+    async listarMisPartidos(req) {
+        console.log('req.user:', req.user);
+        return this.usuariosService.listarMisPartidos(req.user.id);
+    }
 };
 exports.UsuariosController = UsuariosController;
 __decorate([
@@ -209,6 +213,17 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], UsuariosController.prototype, "felicidades", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('me/matches'),
+    (0, swagger_1.ApiBearerAuth)('access-token'),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar mis partidos' }),
+    (0, swagger_1.ApiOkResponse)({ description: 'Listado de partidos del jugador.' }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsuariosController.prototype, "listarMisPartidos", null);
 exports.UsuariosController = UsuariosController = __decorate([
     (0, swagger_1.ApiTags)('Usuarios'),
     (0, common_1.Controller)('usuarios'),

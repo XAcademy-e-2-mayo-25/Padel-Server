@@ -23,6 +23,7 @@ const usuarioposicion_model_1 = require("../../database/models/usuarioposicion.m
 const rol_model_1 = require("../../database/models/rol.model");
 const Estado_model_1 = require("../../database/models/Estado.model");
 const posicion_model_1 = require("../../database/models/posicion.model");
+const clubs_service_1 = require("../clubs/clubs.service");
 const ROL_JUGADOR = 2;
 const ESTADO_HABILITADO = 2;
 const POSICION_NO_DEFINIDA = 1;
@@ -40,7 +41,8 @@ let UsuariosService = class UsuariosService {
     estadoModel;
     categoriaModel;
     sequelize;
-    constructor(usuarioModel, usuarioRolModel, usuarioPosModel, posicionModel, rolModel, estadoModel, categoriaModel, sequelize) {
+    clubsService;
+    constructor(usuarioModel, usuarioRolModel, usuarioPosModel, posicionModel, rolModel, estadoModel, categoriaModel, sequelize, clubsService) {
         this.usuarioModel = usuarioModel;
         this.usuarioRolModel = usuarioRolModel;
         this.usuarioPosModel = usuarioPosModel;
@@ -49,6 +51,7 @@ let UsuariosService = class UsuariosService {
         this.estadoModel = estadoModel;
         this.categoriaModel = categoriaModel;
         this.sequelize = sequelize;
+        this.clubsService = clubsService;
     }
     async findByEmail(email) {
         return this.usuarioModel.findOne({ where: { email } });
@@ -310,6 +313,10 @@ let UsuariosService = class UsuariosService {
             items: rows,
         };
     }
+    async listarMisPartidos(userId) {
+        console.log('Buscando partidos del user:', userId);
+        return this.clubsService.listarMisPartidos(userId);
+    }
 };
 exports.UsuariosService = UsuariosService;
 exports.UsuariosService = UsuariosService = __decorate([
@@ -321,6 +328,7 @@ exports.UsuariosService = UsuariosService = __decorate([
     __param(4, (0, sequelize_1.InjectModel)(rol_model_1.Rol)),
     __param(5, (0, sequelize_1.InjectModel)(Estado_model_1.Estado)),
     __param(6, (0, sequelize_1.InjectModel)(Estado_model_1.Estado)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, sequelize_typescript_1.Sequelize])
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, sequelize_typescript_1.Sequelize,
+        clubs_service_1.ClubsService])
 ], UsuariosService);
 //# sourceMappingURL=usuarios.service.js.map

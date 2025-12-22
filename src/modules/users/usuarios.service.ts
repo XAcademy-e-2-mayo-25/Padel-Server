@@ -23,6 +23,9 @@ import { CrearUsuarioDto } from './dto/crear-usuario.dto';
 import { BajaUsuarioDto } from './dto/baja-usuario.dto';
 import { Categoria } from 'src/database/models/Categoria.model';
 
+
+import { ClubsService } from '../clubs/clubs.service';
+
 // Valores por defecto en la creación de un usuario
 const ROL_JUGADOR = 2;
 const ESTADO_HABILITADO = 2;
@@ -50,6 +53,7 @@ export class UsuariosService {
     @InjectModel(Estado) private readonly estadoModel: typeof Estado,
     @InjectModel(Estado) private readonly categoriaModel: typeof Categoria,
     private readonly sequelize: Sequelize,
+    private readonly clubsService: ClubsService,
   ) {}
 
   // Método público para buscar usuario por email (sino tira error en el auth.service)
@@ -383,4 +387,8 @@ export class UsuariosService {
       items: rows,
     };
   }
+  async listarMisPartidos(userId: number) {
+  console.log('Buscando partidos del user:', userId);
+  return this.clubsService.listarMisPartidos(userId);
+}
 }

@@ -63,7 +63,10 @@ export class ClubsController {
   // Editar club
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
-  editarClub(@Param('id', ParseIntPipe) id: number, @Body() dto: EditarClubDto) {
+  editarClub(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: EditarClubDto,
+  ) {
     return this.clubsService.editarClub(id, dto);
   }
 
@@ -72,14 +75,20 @@ export class ClubsController {
   // Crear cancha
   @Post(':idClub/canchas')
   @HttpCode(HttpStatus.CREATED)
-  crearCancha(@Param('idClub', ParseIntPipe) idClub: number, @Body() dto: CrearCanchaDto) {
+  crearCancha(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Body() dto: CrearCanchaDto,
+  ) {
     return this.clubsService.crearCancha({ ...dto, idClub });
   }
 
   // Listar canchas
   @Get(':idClub/canchas')
   @HttpCode(HttpStatus.OK)
-  listarCanchas(@Param('idClub', ParseIntPipe) idClub: number, @Query() query: ListarCanchasDto) {
+  listarCanchas(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Query() query: ListarCanchasDto,
+  ) {
     return this.clubsService.listarCanchas({ ...query, idClub });
   }
 
@@ -99,14 +108,20 @@ export class ClubsController {
   // Crear método de pago
   @Post(':idClub/datos-pago')
   @HttpCode(HttpStatus.CREATED)
-  crearDatosPago(@Param('idClub', ParseIntPipe) idClub: number, @Body() dto: CrearDatosPagoDto) {
+  crearDatosPago(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Body() dto: CrearDatosPagoDto,
+  ) {
     return this.clubsService.crearDatosPago({ ...dto, idClub });
   }
 
   // Listar métodos de pago
   @Get(':idClub/datos-pago')
   @HttpCode(HttpStatus.OK)
-  listarDatosPagos(@Param('idClub', ParseIntPipe) idClub: number, @Query() query: ListarDatosPagosDto) {
+  listarDatosPagos(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Query() query: ListarDatosPagosDto,
+  ) {
     return this.clubsService.listarDatosPagos({ ...query, idClub });
   }
 
@@ -118,7 +133,10 @@ export class ClubsController {
     @Param('id', ParseIntPipe) idDatosPago: number,
     @Body() dto: ActualizarDatosPagoDto,
   ) {
-    return this.clubsService.actualizarDatosPago(idDatosPago, { ...dto, idClub });
+    return this.clubsService.actualizarDatosPago(idDatosPago, {
+      ...dto,
+      idClub,
+    });
   }
 
   // Endpoints RESERVA TURNO (por club)
@@ -126,14 +144,20 @@ export class ClubsController {
   // Crear reserva
   @Post(':idClub/reservas')
   @HttpCode(HttpStatus.CREATED)
-  crearReserva(@Param('idClub', ParseIntPipe) idClub: number, @Body() dto: CrearReservaTurnoDto) {
+  crearReserva(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Body() dto: CrearReservaTurnoDto,
+  ) {
     return this.clubsService.crearReserva({ ...dto, idClub } as any);
   }
 
   // Listar reservas
   @Get(':idClub/reservas')
   @HttpCode(HttpStatus.OK)
-  listarReservas(@Param('idClub', ParseIntPipe) idClub: number, @Query() query: ListarReservasTurnoDto) {
+  listarReservas(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Query() query: ListarReservasTurnoDto,
+  ) {
     return this.clubsService.listarReservas({ ...query, idClub } as any);
   }
 
@@ -158,4 +182,5 @@ export class ClubsController {
   ) {
     return this.clubsService.pagarReserva(id, { ...dto, idClub } as any);
   }
+
 }
