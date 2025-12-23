@@ -6,7 +6,6 @@ import { Optional } from 'sequelize';
 import { Usuario } from './usuario.model';
 import { Estado } from './Estado.model';
 import { Cancha } from './cancha.model';
-import { Turno } from './turno.model';
 import { DatosPago } from './datosPago.model';
 
 export interface ClubAttributes {
@@ -46,6 +45,5 @@ export class Club extends Model<ClubAttributes, ClubCreationAttributes> implemen
   @BelongsTo(() => Estado) estado?: Estado;
 
   @HasMany(() => Cancha) canchas?: Cancha[];
-  @HasMany(() => Turno) turnos?: Turno[];
   @HasMany(() => DatosPago) datosPagos?: DatosPago[];
 }

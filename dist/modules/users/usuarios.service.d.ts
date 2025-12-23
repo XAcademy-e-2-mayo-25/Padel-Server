@@ -13,6 +13,7 @@ import { ListarUsuariosDto } from './dto/listar-usuarios.dto';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto';
 import { BajaUsuarioDto } from './dto/baja-usuario.dto';
 import { Categoria } from 'src/database/models/Categoria.model';
+import { ClubsService } from '../clubs/clubs.service';
 export declare class UsuariosService {
     private readonly usuarioModel;
     private readonly usuarioRolModel;
@@ -22,7 +23,8 @@ export declare class UsuariosService {
     private readonly estadoModel;
     private readonly categoriaModel;
     private readonly sequelize;
-    constructor(usuarioModel: typeof Usuario, usuarioRolModel: typeof UsuarioRol, usuarioPosModel: typeof UsuarioPosicion, posicionModel: typeof Posicion, rolModel: typeof Rol, estadoModel: typeof Estado, categoriaModel: typeof Categoria, sequelize: Sequelize);
+    private readonly clubsService;
+    constructor(usuarioModel: typeof Usuario, usuarioRolModel: typeof UsuarioRol, usuarioPosModel: typeof UsuarioPosicion, posicionModel: typeof Posicion, rolModel: typeof Rol, estadoModel: typeof Estado, categoriaModel: typeof Categoria, sequelize: Sequelize, clubsService: ClubsService);
     findByEmail(email: string): Promise<Usuario | null>;
     crearUsuario(dto: CrearUsuarioDto): Promise<{
         mensaje: string;
@@ -70,4 +72,5 @@ export declare class UsuariosService {
         totalPages: number;
         items: Usuario[];
     }>;
+    listarMisPartidos(userId: number): Promise<any>;
 }

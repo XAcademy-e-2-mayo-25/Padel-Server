@@ -6,11 +6,12 @@ import {
   IsOptional,
   IsString,
   Length,
+  Max,
   Min,
 } from 'class-validator';
 
 export class ListarCanchasDto {
-  // --- PAGINACIÓN ---
+  //paginacion
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -23,29 +24,40 @@ export class ListarCanchasDto {
   @Min(1)
   limit: number = 10;
 
-  // --- ORDEN ---
+  // orden
   @IsOptional()
-  @IsIn(['idCancha', 'idClub', 'denominacion', 'cubierta'])
-  sortBy: 'idCancha' | 'idClub' | 'denominacion' | 'cubierta' = 'idCancha';
+  @IsIn([
+    'idCancha',
+    'idClub',
+    'denominacion',
+    'cubierta',
+    'precio',
+    'rangoSlotMinutos',
+  ])
+  sortBy:
+    | 'idCancha'
+    | 'idClub'
+    | 'denominacion'
+    | 'cubierta'
+    | 'precio'
+    | 'rangoSlotMinutos' = 'idCancha';
 
   @IsOptional()
   @IsIn(['ASC', 'DESC', 'asc', 'desc'])
   sortDir: 'ASC' | 'DESC' | 'asc' | 'desc' = 'ASC';
 
-  // --- FILTRO: idClub ---
+  // filtros basicos
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   idClub?: number;
 
-  // --- FILTRO: denominacion contains ---
   @IsOptional()
   @IsString()
   @Length(1, 200)
   denominacion?: string;
 
-  // --- FILTRO: cubierta ---
   @IsOptional()
   @Transform(({ value }) => {
     if (value === undefined) return undefined;
@@ -55,4 +67,32 @@ export class ListarCanchasDto {
   })
   @IsBoolean()
   cubierta?: boolean;
+
+  // filtro por dia puntual
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(6)
+  dia?: number;
+
+  // slot en minutos
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsIn([30, 60])
+  rangoSlotMinutos?: number;
+
+  // rango de precio
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  precioMin?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  precioMax?: number;
 }

@@ -62,4 +62,5 @@ export declare class UsuariosController {
         mensaje: string;
         usuario: any;
     };
+    listarMisPartidos(req: any): Promise<any>;
 }

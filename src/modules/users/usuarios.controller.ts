@@ -173,5 +173,16 @@ export class UsuariosController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('me/matches')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Listar mis partidos' })
+  @ApiOkResponse({ description: 'Listado de partidos del jugador.' })
+  async listarMisPartidos(@Req() req: any) {
+    console.log('req.user:', req.user);
+    return this.usuariosService.listarMisPartidos(req.user.id);
+  }
+
+
 }
 
