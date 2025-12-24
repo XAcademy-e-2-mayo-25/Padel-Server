@@ -54,6 +54,11 @@ __decorate([
 ], Usuario.prototype, "fotoPerfil", void 0);
 __decorate([
     (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING(500)),
+    __metadata("design:type", Object)
+], Usuario.prototype, "bio", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
     (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING(80)),
     __metadata("design:type", Object)
 ], Usuario.prototype, "provincia", void 0);

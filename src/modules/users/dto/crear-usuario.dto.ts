@@ -1,4 +1,5 @@
 import { IsEmail, IsOptional, IsString, Length, IsInt, IsPositive } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CrearUsuarioDto {
@@ -51,6 +52,30 @@ export class CrearUsuarioDto {
   @IsString()
   @Length(1, 255)
   fotoPerfil?: string;
+
+  @ApiPropertyOptional({
+    example: 'Jugador apasionado de pádel desde 2015.',
+    description: 'Biografía corta del usuario (opcional).',
+    minLength: 1,
+    maxLength: 500,
+  })
+  @Transform(({ value, obj }) => value ?? obj.biografia ?? obj.descripcion ?? obj.description ?? obj.about ?? null)
+  @IsOptional()
+  @IsString()
+  @Length(1, 500)
+  bio?: string;
+
+  // Alias usado por algunos frontends
+  @ApiPropertyOptional({
+    example: 'Jugador apasionado de pádel desde 2015.',
+    description: 'Alias biografia (opcional).',
+    minLength: 1,
+    maxLength: 500,
+  })
+  @IsOptional()
+  @IsString()
+  @Length(1, 500)
+  biografia?: string;
 
   //Provincia y localidad estaria bueno usar alguna libreria que incluya todas las provincias y todas las localidades
   //para evitar tipeo

@@ -4,6 +4,8 @@ export declare class CrearUsuarioDto {
     dni?: string;
     email: string;
     fotoPerfil?: string;
+    bio?: string;
+    biografia?: string;
     provincia?: string;
     localidad?: string;
     idCategoria?: number;

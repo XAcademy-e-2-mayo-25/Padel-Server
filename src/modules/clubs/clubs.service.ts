@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException,} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Sequelize, Op } from 'sequelize';
+import { Op } from 'sequelize';
 
 // Modelos
 import { Club } from '../../database/models/club.model';
@@ -10,6 +10,7 @@ import { CanchaTurno } from '../../database/models/canchaTurno.model';
 import { DatosPago } from '../../database/models/datosPago.model';
 import { Usuario } from '../../database/models/usuario.model';
 import { Estado } from '../../database/models/Estado.model';
+import { Reserva } from '../../database/models/reserva.model';
 
 // DTOs
 import {
@@ -47,6 +48,7 @@ export class ClubsService {
     @InjectModel(DatosPago) private readonly datosPagoModel: typeof DatosPago,
     @InjectModel(Usuario) private readonly usuarioModel: typeof Usuario,
     @InjectModel(Estado) private readonly estadoModel: typeof Estado,
+    @InjectModel(Reserva) private readonly reservaModel: typeof Reserva,
     //private readonly sequelize: Sequelize,
   ) {}
 
@@ -166,6 +168,11 @@ export class ClubsService {
       denominacion: dto.denominacion,
       cubierta: dto.cubierta ?? null,
       observaciones: dto.observaciones ?? null,
+      diasSemana: dto.diasSemana,
+      horaDesde: dto.horaDesde,
+      horaHasta: dto.horaHasta,
+      rangoSlotMinutos: dto.rangoSlotMinutos,
+      precio: dto.precio,
     });
 
     return { mensaje: 'Cancha creada correctamente', cancha: nueva };
@@ -178,8 +185,13 @@ export class ClubsService {
     const cambios: Partial<Cancha> = {
       idClub: dto.idClub ?? cancha.idClub,
       denominacion: dto.denominacion ?? cancha.denominacion,
-      cubierta: dto.cubierta ?? cancha.cubierta,
+      cubierta: typeof dto.cubierta === 'boolean' ? dto.cubierta : cancha.cubierta,
       observaciones: dto.observaciones ?? cancha.observaciones,
+      diasSemana: (dto as any).diasSemana ?? (cancha as any).diasSemana,
+      horaDesde: (dto as any).horaDesde ?? (cancha as any).horaDesde,
+      horaHasta: (dto as any).horaHasta ?? (cancha as any).horaHasta,
+      rangoSlotMinutos: (dto as any).rangoSlotMinutos ?? (cancha as any).rangoSlotMinutos,
+      precio: (dto as any).precio ?? (cancha as any).precio,
     };
 
     await this.canchaModel.update(cambios, { where: { idCancha } });
@@ -198,6 +210,26 @@ export class ClubsService {
     if (q.idClub) where.idClub = q.idClub;
     if (q.denominacion) where.denominacion = { [Op.like]: `%${q.denominacion}%` };
     if (typeof q.cubierta === 'boolean') where.cubierta = q.cubierta;
+    if ((q as any).rangoSlotMinutos) where.rangoSlotMinutos = (q as any).rangoSlotMinutos;
+
+    if ((q as any).precioMin || (q as any).precioMax) {
+      where.precio = {
+        ...((q as any).precioMin ? { [Op.gte]: (q as any).precioMin } : {}),
+        ...((q as any).precioMax ? { [Op.lte]: (q as any).precioMax } : {}),
+      };
+    }
+
+    // filtro por día habilitado: (diasSemana & (1 << dia)) != 0
+    if (typeof (q as any).dia === 'number') {
+      const mask = 1 << (q as any).dia;
+      where[Op.and] = [
+        ...(where[Op.and] ?? []),
+        this.canchaModel.sequelize!.where(
+          this.canchaModel.sequelize!.literal(`(diasSemana & ${mask})`),
+          { [Op.ne]: 0 },
+        ),
+      ];
+    }
 
     const { rows, count } = await this.canchaModel.findAndCountAll({
       where,
@@ -496,5 +528,29 @@ export class ClubsService {
       totalPages: Math.ceil(count / limit),
       items: rows,
     };
+  }
+
+  async listarMisPartidos(idUsuario: number) {
+    const hoy = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    const items = await this.reservaModel.findAll({
+      where: {
+        idUsuario,
+        pagada: true,
+        estado: { [Op.ne]: 'cancelada' },
+        fechaReserva: { [Op.gte]: hoy },
+      },
+      include: [
+        { model: Cancha, attributes: ['idCancha', 'denominacion'] },
+        { model: Club, attributes: ['idClub', 'razonSocial', 'nombreFantasia'] },
+        { model: Turno, attributes: ['idTurno', 'horaDesde', 'horaHasta', 'fecha', 'diaSemana'] },
+      ],
+      order: [
+        ['fechaReserva', 'ASC'],
+        ['idTurno', 'ASC'],
+      ],
+    });
+
+    return items;
   }
 }

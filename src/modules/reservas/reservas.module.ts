@@ -8,9 +8,12 @@ import { Club } from '../../database/models/club.model';
 import { Cancha } from '../../database/models/cancha.model';
 import { Turno } from '../../database/models/turno.model';
 import { CanchaTurno } from '../../database/models/canchaTurno.model';
+import { ReservaTurno } from '../../database/models/reservaTurno.model';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Reserva, Usuario, Club, Cancha, Turno, CanchaTurno])],
+  imports: [
+    SequelizeModule.forFeature([Reserva, Usuario, Club, Cancha, Turno, CanchaTurno, ReservaTurno]),
+  ],
   controllers: [ReservasController],
   providers: [ReservasService],
   exports: [ReservasService],

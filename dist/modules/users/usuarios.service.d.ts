@@ -72,5 +72,5 @@ export declare class UsuariosService {
         totalPages: number;
         items: Usuario[];
     }>;
-    listarMisPartidos(userId: number): Promise<any>;
+    listarMisPartidos(userId: number): Promise<import("../../database/models/reserva.model").Reserva[]>;
 }

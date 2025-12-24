@@ -62,5 +62,5 @@ export declare class UsuariosController {
         mensaje: string;
         usuario: any;
     };
-    listarMisPartidos(req: any): Promise<any>;
+    listarMisPartidos(req: any): Promise<import("../../database/models/reserva.model").Reserva[]>;
 }

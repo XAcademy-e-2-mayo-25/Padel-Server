@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrearUsuarioDto = void 0;
 const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
 const swagger_1 = require("@nestjs/swagger");
 class CrearUsuarioDto {
     nombres;
@@ -18,6 +19,8 @@ class CrearUsuarioDto {
     dni;
     email;
     fotoPerfil;
+    bio;
+    biografia;
     provincia;
     localidad;
     idCategoria;
@@ -77,6 +80,31 @@ __decorate([
     (0, class_validator_1.Length)(1, 255),
     __metadata("design:type", String)
 ], CrearUsuarioDto.prototype, "fotoPerfil", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 'Jugador apasionado de pádel desde 2015.',
+        description: 'Biografía corta del usuario (opcional).',
+        minLength: 1,
+        maxLength: 500,
+    }),
+    (0, class_transformer_1.Transform)(({ value, obj }) => value ?? obj.biografia ?? obj.descripcion ?? obj.description ?? obj.about ?? null),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Length)(1, 500),
+    __metadata("design:type", String)
+], CrearUsuarioDto.prototype, "bio", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        example: 'Jugador apasionado de pádel desde 2015.',
+        description: 'Alias biografia (opcional).',
+        minLength: 1,
+        maxLength: 500,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Length)(1, 500),
+    __metadata("design:type", String)
+], CrearUsuarioDto.prototype, "biografia", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         example: 'Córdoba',

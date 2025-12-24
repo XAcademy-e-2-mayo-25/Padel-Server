@@ -16,6 +16,7 @@ export interface UsuarioAttributes {
   dni: string | null;
   email: string;
   fotoPerfil: string | null;
+  bio: string | null;
   provincia: string | null;
   localidad: string | null;
   idCategoria: number | null;
@@ -27,7 +28,7 @@ export interface UsuarioAttributes {
 //campos opcionales al momento de crear un Usuario
 export type UsuarioCreationAttributes = Optional<
   UsuarioAttributes,
-  'idUsuario' | 'dni' | 'fotoPerfil' | 'provincia' | 'localidad' | 'idCategoria' | 'telefono' | 'direccion'
+  'idUsuario' | 'dni' | 'fotoPerfil' | 'bio' | 'provincia' | 'localidad' | 'idCategoria' | 'telefono' | 'direccion'
 >;
 
 
@@ -43,6 +44,7 @@ export class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
   @AllowNull(true)  @Column(DataType.STRING(20))  declare dni: string | null;
   @AllowNull(false) @Unique @Column(DataType.STRING(160)) declare email: string;
   @AllowNull(true)  @Column(DataType.STRING(255)) declare fotoPerfil: string | null;
+  @AllowNull(true)  @Column(DataType.STRING(500)) declare bio: string | null;
   @AllowNull(true)  @Column(DataType.STRING(80))  declare provincia: string | null;
   @AllowNull(true)  @Column(DataType.STRING(120)) declare localidad: string | null;
 
