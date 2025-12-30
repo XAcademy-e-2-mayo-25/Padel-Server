@@ -44,6 +44,7 @@ export class UsuariosController {
     return this.usuariosService.crearUsuario(dto);
   }
 
+  
   //endpoint para debug test
   @Post('debug-body')
   @ApiOperation({ summary: 'Echo de body (debug)', description: 'Devuelve el body recibido. Solo para pruebas.' })
@@ -144,7 +145,7 @@ export class UsuariosController {
   @ApiOperation({ summary: 'Listar usuarios con filtros, orden y paginación' })
   @ApiOkResponse({ description: 'Listado de usuarios devuelto correctamente.' })
   @ApiBadRequestResponse({ description: 'Parámetros de búsqueda inválidos.' })
-  // (Opcional) explicitar queries para mejor UI en Swagger:
+  
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @ApiQuery({ name: 'sortBy', required: false, enum: ['idUsuario', 'nombres', 'apellidos', 'email', 'idCategoria'], example: 'apellidos' })

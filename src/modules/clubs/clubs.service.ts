@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Sequelize } from 'sequelize';
+import { Op } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 
 // Modelos
 import { Club } from '../../database/models/club.model';
@@ -9,6 +10,7 @@ import { DatosPago } from '../../database/models/datosPago.model';
 import { Usuario } from '../../database/models/usuario.model';
 import { Estado } from '../../database/models/Estado.model';
 import { ReservaTurno } from 'src/database/models/reservaTurno.model';
+import { UsuarioRol } from 'src/database/models/usuariorol.model';
 
 // DTOs
 import {
@@ -28,6 +30,7 @@ import {
 } from './dto';
 
 //estados
+const ROL_CLUB = 3;
 const ESTADO_PENDIENTE = 1;
 const ESTADO_HABILITADO = 2;
 const ESTADO_BANEADO = 3;
@@ -41,6 +44,8 @@ export class ClubsService {
     @InjectModel(Usuario) private readonly usuarioModel: typeof Usuario,
     @InjectModel(Estado) private readonly estadoModel: typeof Estado,
     @InjectModel(ReservaTurno) private readonly reservaModel: typeof ReservaTurno,
+    @InjectModel(UsuarioRol) private readonly usuarioRolModel: typeof UsuarioRol,
+    private readonly sequelize: Sequelize,
   ) {}
 
   // METODOS CLUB
@@ -53,15 +58,41 @@ export class ClubsService {
     const dup = await this.clubModel.findOne({ where: { cuitCuil: dto.cuitCuil } });
     if (dup) throw new BadRequestException('Ya existe un club con ese CUIT/CUIL');
 
-    const creado = await this.clubModel.create({
-      idUsuario: dto.idUsuario,
-      razonSocial: dto.razonSocial ?? null,
-      nombreFantasia: dto.nombreFantasia ?? null,
-      cuitCuil: dto.cuitCuil,
-      provincia: dto.provincia,
-      localidad: dto.localidad,
-      direccion: dto.direccion,
-      idEstadoClub: dto.idEstadoClub ?? ESTADO_PENDIENTE,
+    const creado = await this.sequelize.transaction(async (t) => {
+      // 1) crear club
+      const club = await this.clubModel.create(
+        {
+          idUsuario: dto.idUsuario,
+          razonSocial: dto.razonSocial ?? null,
+          nombreFantasia: dto.nombreFantasia ?? null,
+          cuitCuil: dto.cuitCuil,
+          provincia: dto.provincia,
+          localidad: dto.localidad,
+          direccion: dto.direccion,
+          idEstadoClub: dto.idEstadoClub ?? ESTADO_PENDIENTE,
+        },
+        { transaction: t },
+      );
+
+      // 2) asegurar rol CLUB para el usuario
+      const existeRolClub = await this.usuarioRolModel.findOne({
+        where: { idUsuario: dto.idUsuario, idRol: ROL_CLUB },
+        transaction: t,
+      });
+
+      if (!existeRolClub) {
+        await this.usuarioRolModel.create(
+          {
+            idUsuario: dto.idUsuario,
+            idRol: ROL_CLUB,
+            idEstado: ESTADO_PENDIENTE,
+            descripcion: null,
+          },
+          { transaction: t },
+        );
+      }
+
+      return club;
     });
 
     const withRels = await this.clubModel.findByPk(creado.idClub, {
@@ -70,6 +101,7 @@ export class ClubsService {
 
     return { mensaje: 'Club creado correctamente', club: withRels };
   }
+
 
   async editarClub(idClub: number, dto: EditarClubDto) {
     const club = await this.clubModel.findByPk(idClub);
