@@ -1,16 +1,16 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 
 // Modelos
 import { Club } from '../../database/models/club.model';
 import { Cancha } from '../../database/models/cancha.model';
-import { Turno } from '../../database/models/turno.model';
-import { CanchaTurno } from '../../database/models/canchaTurno.model';
 import { DatosPago } from '../../database/models/datosPago.model';
 import { Usuario } from '../../database/models/usuario.model';
 import { Estado } from '../../database/models/Estado.model';
-import { Reserva } from '../../database/models/reserva.model';
+import { ReservaTurno } from 'src/database/models/reservaTurno.model';
+import { UsuarioRol } from 'src/database/models/usuariorol.model';
 
 // DTOs
 import {
@@ -18,42 +18,37 @@ import {
   EditarClubDto,
   CrearCanchaDto,
   EditarCanchaDto,
-  CrearTurnoDto,
-  CrearSlotDto,
-  EditarTurnoDto,
-  AsignarTurnoCanchaDto,
-  QuitarTurnoCanchaDto,
-  ActualizarTurnoCanchaDto,
   CrearDatosPagoDto,
   ActualizarDatosPagoDto,
   ListarCanchasDto,
   ListarClubsDto,
   ListarDatosPagosDto,
-  ListarTurnosDto,
-  ListarTurnosCanchasDto,
+  CrearReservaTurnoDto,
+  EditarReservaTurnoDto,
+  ListarReservasTurnoDto,
+  PagarReservaTurnoDto,
 } from './dto';
 
 //estados
+const ROL_CLUB = 3;
 const ESTADO_PENDIENTE = 1;
 const ESTADO_HABILITADO = 2;
-const ESTADO_BANEADO   = 3;
+const ESTADO_BANEADO = 3;
 
 @Injectable()
 export class ClubsService {
   constructor(
     @InjectModel(Club) private readonly clubModel: typeof Club,
     @InjectModel(Cancha) private readonly canchaModel: typeof Cancha,
-    @InjectModel(Turno) private readonly turnoModel: typeof Turno,
-    @InjectModel(CanchaTurno) private readonly canchaTurnoModel: typeof CanchaTurno,
     @InjectModel(DatosPago) private readonly datosPagoModel: typeof DatosPago,
     @InjectModel(Usuario) private readonly usuarioModel: typeof Usuario,
     @InjectModel(Estado) private readonly estadoModel: typeof Estado,
-    @InjectModel(Reserva) private readonly reservaModel: typeof Reserva,
-    //private readonly sequelize: Sequelize,
+    @InjectModel(ReservaTurno) private readonly reservaModel: typeof ReservaTurno,
+    @InjectModel(UsuarioRol) private readonly usuarioRolModel: typeof UsuarioRol,
+    private readonly sequelize: Sequelize,
   ) {}
 
   // METODOS CLUB
-
   async crearClub(dto: CrearClubDto) {
     // validar usuario existente
     const user = await this.usuarioModel.findByPk(dto.idUsuario);
@@ -63,15 +58,41 @@ export class ClubsService {
     const dup = await this.clubModel.findOne({ where: { cuitCuil: dto.cuitCuil } });
     if (dup) throw new BadRequestException('Ya existe un club con ese CUIT/CUIL');
 
-    const creado = await this.clubModel.create({
-      idUsuario: dto.idUsuario,
-      razonSocial: dto.razonSocial ?? null,
-      nombreFantasia: dto.nombreFantasia ?? null,
-      cuitCuil: dto.cuitCuil,
-      provincia: dto.provincia,
-      localidad: dto.localidad,
-      direccion: dto.direccion,
-      idEstadoClub: dto.idEstadoClub ?? ESTADO_PENDIENTE,
+    const creado = await this.sequelize.transaction(async (t) => {
+      // 1) crear club
+      const club = await this.clubModel.create(
+        {
+          idUsuario: dto.idUsuario,
+          razonSocial: dto.razonSocial ?? null,
+          nombreFantasia: dto.nombreFantasia ?? null,
+          cuitCuil: dto.cuitCuil,
+          provincia: dto.provincia,
+          localidad: dto.localidad,
+          direccion: dto.direccion,
+          idEstadoClub: dto.idEstadoClub ?? ESTADO_PENDIENTE,
+        },
+        { transaction: t },
+      );
+
+      // 2) asegurar rol CLUB para el usuario
+      const existeRolClub = await this.usuarioRolModel.findOne({
+        where: { idUsuario: dto.idUsuario, idRol: ROL_CLUB },
+        transaction: t,
+      });
+
+      if (!existeRolClub) {
+        await this.usuarioRolModel.create(
+          {
+            idUsuario: dto.idUsuario,
+            idRol: ROL_CLUB,
+            idEstado: ESTADO_PENDIENTE,
+            descripcion: null,
+          },
+          { transaction: t },
+        );
+      }
+
+      return club;
     });
 
     const withRels = await this.clubModel.findByPk(creado.idClub, {
@@ -80,6 +101,7 @@ export class ClubsService {
 
     return { mensaje: 'Club creado correctamente', club: withRels };
   }
+
 
   async editarClub(idClub: number, dto: EditarClubDto) {
     const club = await this.clubModel.findByPk(idClub);
@@ -156,9 +178,11 @@ export class ClubsService {
     };
   }
 
-  // METODOS CANCHA
+  // METODOS CANCHA (para un club especifico)
 
-  async crearCancha(dto: CrearCanchaDto) {
+  async crearCancha(dto: CrearCanchaDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     // validar club
     const club = await this.clubModel.findByPk(dto.idClub);
     if (!club) throw new NotFoundException('Club no encontrado');
@@ -168,22 +192,31 @@ export class ClubsService {
       denominacion: dto.denominacion,
       cubierta: dto.cubierta ?? null,
       observaciones: dto.observaciones ?? null,
-      diasSemana: dto.diasSemana,
-      horaDesde: dto.horaDesde,
-      horaHasta: dto.horaHasta,
-      rangoSlotMinutos: dto.rangoSlotMinutos,
-      precio: dto.precio,
+      diasSemana: (dto as any).diasSemana,
+      horaDesde: (dto as any).horaDesde,
+      horaHasta: (dto as any).horaHasta,
+      rangoSlotMinutos: (dto as any).rangoSlotMinutos,
+      precio: (dto as any).precio,
     });
 
-    return { mensaje: 'Cancha creada correctamente', cancha: nueva };
+    const withClub = await this.canchaModel.findByPk(nueva.idCancha, { include: [Club] });
+    return { mensaje: 'Cancha creada correctamente', cancha: withClub };
   }
 
-  async editarCancha(idCancha: number, dto: EditarCanchaDto) {
+  async editarCancha(idCancha: number, dto: EditarCanchaDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const cancha = await this.canchaModel.findByPk(idCancha);
     if (!cancha) throw new NotFoundException('Cancha no encontrada');
 
+    //la cancha debe pertenecer al club
+    if (cancha.idClub !== dto.idClub) {
+      throw new BadRequestException('La cancha no pertenece a ese club');
+    }
+
     const cambios: Partial<Cancha> = {
-      idClub: dto.idClub ?? cancha.idClub,
+      // NO permitir mover la cancha de club por este endpoint: se fuerza al idClub de la ruta
+      idClub: dto.idClub,
       denominacion: dto.denominacion ?? cancha.denominacion,
       cubierta: typeof dto.cubierta === 'boolean' ? dto.cubierta : cancha.cubierta,
       observaciones: dto.observaciones ?? cancha.observaciones,
@@ -200,14 +233,16 @@ export class ClubsService {
     return { mensaje: 'Cancha actualizada correctamente', cancha: actualizado };
   }
 
-  async listarCanchas(q: ListarCanchasDto) {
+  async listarCanchas(q: ListarCanchasDto & { idClub?: number }) {
+    if (!q.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const page = q.page ?? 1;
     const limit = q.limit ?? 10;
     const offset = (page - 1) * limit;
     const order: any[] = [[q.sortBy ?? 'idCancha', (q.sortDir ?? 'ASC').toUpperCase()]];
 
-    const where: any = {};
-    if (q.idClub) where.idClub = q.idClub;
+    const where: any = { idClub: q.idClub };
+
     if (q.denominacion) where.denominacion = { [Op.like]: `%${q.denominacion}%` };
     if (typeof q.cubierta === 'boolean') where.cubierta = q.cubierta;
     if ((q as any).rangoSlotMinutos) where.rangoSlotMinutos = (q as any).rangoSlotMinutos;
@@ -224,10 +259,7 @@ export class ClubsService {
       const mask = 1 << (q as any).dia;
       where[Op.and] = [
         ...(where[Op.and] ?? []),
-        this.canchaModel.sequelize!.where(
-          this.canchaModel.sequelize!.literal(`(diasSemana & ${mask})`),
-          { [Op.ne]: 0 },
-        ),
+        Sequelize.where(Sequelize.literal(`(diasSemana & ${mask})`), { [Op.ne]: 0 }),
       ];
     }
 
@@ -249,214 +281,11 @@ export class ClubsService {
     };
   }
 
-  // METODOS TURNO
+  // METODOS DATOS PAGO (de un idClub)
 
-  async crearTurno(dto: CrearTurnoDto) {
-    // validar club
-    const club = await this.clubModel.findByPk(dto.idClub);
-    if (!club) throw new NotFoundException('Club no encontrado');
+  async crearDatosPago(dto: CrearDatosPagoDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
 
-    const creado = await this.turnoModel.create({
-      idClub: dto.idClub,
-      fecha: dto.fecha ?? null,
-      diaSemana: dto.diaSemana ?? null,
-      horaDesde: dto.horaDesde,
-      horaHasta: dto.horaHasta,
-    });
-
-    return { mensaje: 'Turno creado correctamente', turno: creado };
-  }
-
-  async crearSlot(dto: CrearSlotDto) {
-    const club = await this.clubModel.findByPk(dto.idClub);
-    if (!club) throw new NotFoundException('Club no encontrado');
-
-    const cancha = await this.canchaModel.findByPk(dto.idCancha);
-    if (!cancha) throw new NotFoundException('Cancha no encontrada');
-
-    if (cancha.idClub !== dto.idClub) {
-      throw new BadRequestException('La cancha no pertenece al club indicado');
-    }
-
-    let turno: Turno | null = null;
-
-    if (dto.idTurno) {
-      turno = await this.turnoModel.findByPk(dto.idTurno);
-      if (!turno) throw new NotFoundException('Turno no encontrado');
-      if (turno.idClub !== dto.idClub) {
-        throw new BadRequestException('El turno no pertenece al club indicado');
-      }
-    } else {
-      if (!dto.horaDesde || !dto.horaHasta) {
-        throw new BadRequestException('Debe indicar horaDesde y horaHasta para crear un turno nuevo');
-      }
-
-      turno = await this.turnoModel.create({
-        idClub: dto.idClub,
-        fecha: dto.fecha ?? null,
-        diaSemana: dto.diaSemana ?? null,
-        horaDesde: dto.horaDesde,
-        horaHasta: dto.horaHasta,
-      });
-    }
-
-    const canchaTurno = await this.canchaTurnoModel.create({
-      idClub: dto.idClub,
-      idCancha: dto.idCancha,
-      idTurno: turno.idTurno,
-      disponible: typeof dto.disponible === 'boolean' ? dto.disponible : true,
-      precio: typeof dto.precio === 'number' ? dto.precio : 0,
-    });
-
-    const turnoConRelaciones = await this.turnoModel.findByPk(turno.idTurno, {
-      include: [Club],
-    });
-
-    return {
-      mensaje: 'Slot creado correctamente',
-      turno: turnoConRelaciones,
-      canchaTurno,
-    };
-  }
-
-  async editarTurno(idTurno: number, dto: EditarTurnoDto) {
-    const turno = await this.turnoModel.findByPk(idTurno);
-    if (!turno) throw new NotFoundException('Turno no encontrado');
-
-    const cambios: Partial<Turno> = {
-      idClub: dto.idClub ?? turno.idClub,
-      fecha: dto.fecha ?? turno.fecha,
-      diaSemana: dto.diaSemana ?? turno.diaSemana,
-      horaDesde: dto.horaDesde ?? turno.horaDesde,
-      horaHasta: dto.horaHasta ?? turno.horaHasta,
-    };
-
-    await this.turnoModel.update(cambios, { where: { idTurno } });
-
-    const actualizado = await this.turnoModel.findByPk(idTurno, { include: [Club] });
-    return { mensaje: 'Turno actualizado correctamente', turno: actualizado };
-  }
-
-  async listarTurnos(q: ListarTurnosDto) {
-    const page = q.page ?? 1;
-    const limit = q.limit ?? 10;
-    const offset = (page - 1) * limit;
-    const order: any[] = [[q.sortBy ?? 'idTurno', (q.sortDir ?? 'ASC').toUpperCase()]];
-
-    const where: any = {};
-    if (q.idClub) where.idClub = q.idClub;
-    if (q.fecha) where.fecha = q.fecha;
-    if (q.diaSemana !== undefined) where.diaSemana = q.diaSemana;
-    if (q.horaDesde) where.horaDesde = q.horaDesde;
-    if (q.horaHasta) where.horaHasta = q.horaHasta;
-
-    const { rows, count } = await this.turnoModel.findAndCountAll({
-      where,
-      include: [Club],
-      order,
-      limit,
-      offset,
-      distinct: true,
-    });
-
-    return {
-      page,
-      limit,
-      total: count,
-      totalPages: Math.ceil(count / limit),
-      items: rows,
-    };
-  }
-
-  // METODOS CANCHA-TURNO
-
-  async asignarTurnoCancha(dto: AsignarTurnoCanchaDto) {
-    // validar existencia
-    const cancha = await this.canchaModel.findByPk(dto.idCancha);
-    if (!cancha) throw new NotFoundException('Cancha no encontrada');
-
-    const turno = await this.turnoModel.findByPk(dto.idTurno);
-    if (!turno) throw new NotFoundException('Turno no encontrado');
-
-    // validar que turno y cancha pertenezcan al mismo club
-    if (cancha.idClub !== turno.idClub) {
-      throw new BadRequestException('La cancha y el turno deben pertenecer al mismo club');
-    }
-
-    // crear relación (UNIQUE idCancha+idTurno)
-    const row = await this.canchaTurnoModel.create({
-      idClub: cancha.idClub,
-      idCancha: dto.idCancha,
-      idTurno: dto.idTurno,
-      disponible: dto.disponible ?? true,
-      precio: dto.precio ?? 0,
-    });
-
-    return { mensaje: 'Turno asignado a cancha correctamente', canchaTurno: row };
-    }
-
-  async actualizarTurnoCancha(
-    idCancha: number,
-    idTurno: number,
-    dto: ActualizarTurnoCanchaDto,
-  ) {
-    const rel = await this.canchaTurnoModel.findOne({ where: { idCancha, idTurno } });
-    if (!rel) throw new NotFoundException('Relación Cancha-Turno no encontrada');
-
-    const cambios: Partial<CanchaTurno> = {
-      disponible: dto.disponible ?? rel.disponible,
-      precio: typeof dto.precio === 'number' ? dto.precio : rel.precio,
-    };
-
-    await this.canchaTurnoModel.update(cambios, { where: { idCancha, idTurno } });
-
-    const actualizado = await this.canchaTurnoModel.findOne({ where: { idCancha, idTurno } });
-    return { mensaje: 'Relación Cancha-Turno actualizada', canchaTurno: actualizado };
-  }
-
-  async quitarTurnoCancha(dto: QuitarTurnoCanchaDto) {
-    const affected = await this.canchaTurnoModel.destroy({
-      where: { idCancha: dto.idCancha, idTurno: dto.idTurno },
-    });
-    if (affected === 0) throw new NotFoundException('Relación Cancha-Turno no encontrada');
-    return { mensaje: 'Turno desasignado de cancha', idCancha: dto.idCancha, idTurno: dto.idTurno };
-  }
-
-  async listarTurnosCancha(q: ListarTurnosCanchasDto) {
-    const page = q.page ?? 1;
-    const limit = q.limit ?? 10;
-    const offset = (page - 1) * limit;
-    const order: any[] = [[q.sortBy ?? 'idCanchaTurno', (q.sortDir ?? 'ASC').toUpperCase()]];
-
-    const where: any = {};
-    if (q.idClub) where.idClub = q.idClub;
-    if (q.idCancha) where.idCancha = q.idCancha;
-    if (q.idTurno) where.idTurno = q.idTurno;
-    if (typeof q.disponible === 'boolean') where.disponible = q.disponible;
-    if (q.precioMin !== undefined) where.precio = { ...(where.precio ?? {}), [Op.gte]: q.precioMin };
-    if (q.precioMax !== undefined) where.precio = { ...(where.precio ?? {}), [Op.lte]: q.precioMax };
-
-    const { rows, count } = await this.canchaTurnoModel.findAndCountAll({
-      where,
-      include: [Cancha, Turno, Club],
-      order,
-      limit,
-      offset,
-      distinct: true,
-    });
-
-    return {
-      page,
-      limit,
-      total: count,
-      totalPages: Math.ceil(count / limit),
-      items: rows,
-    };
-  }
-
-  // METODOS DATOS PAGO
-
-  async crearDatosPago(dto: CrearDatosPagoDto) {
     const club = await this.clubModel.findByPk(dto.idClub);
     if (!club) throw new NotFoundException('Club no encontrado');
 
@@ -477,12 +306,20 @@ export class ClubsService {
     return { mensaje: 'Datos de pago creados', datosPago: creado };
   }
 
-  async actualizarDatosPago(idDatosPago: number, dto: ActualizarDatosPagoDto) {
+  async actualizarDatosPago(idDatosPago: number, dto: ActualizarDatosPagoDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const row = await this.datosPagoModel.findByPk(idDatosPago);
     if (!row) throw new NotFoundException('Datos de pago no encontrados');
 
+    //debe pertenecer al club
+    if (row.idClub !== dto.idClub) {
+      throw new BadRequestException('Los datos de pago no pertenecen a ese club');
+    }
+
     const cambios: Partial<DatosPago> = {
-      idClub: dto.idClub ?? row.idClub,
+      // NO permitir mover el método de pago de club: se fuerza al idClub de la ruta
+      idClub: dto.idClub,
       metodoPago: dto.metodoPago ?? row.metodoPago,
       cbu: dto.cbu ?? row.cbu,
       cvu: dto.cvu ?? row.cvu,
@@ -501,14 +338,15 @@ export class ClubsService {
     return { mensaje: 'Datos de pago actualizados', datosPago: actualizado };
   }
 
-  async listarDatosPagos(q: ListarDatosPagosDto) {
+  async listarDatosPagos(q: ListarDatosPagosDto & { idClub?: number }) {
+    if (!q.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
     const page = q.page ?? 1;
     const limit = q.limit ?? 10;
     const offset = (page - 1) * limit;
     const order: any[] = [[q.sortBy ?? 'idDatosPago', (q.sortDir ?? 'ASC').toUpperCase()]];
 
-    const where: any = {};
-    if (q.idClub) where.idClub = q.idClub;
+    const where: any = { idClub: q.idClub };
     if (q.metodoPago) where.metodoPago = { [Op.like]: `%${q.metodoPago}%` };
     if (typeof q.activo === 'boolean') where.activo = q.activo;
 
@@ -530,27 +368,211 @@ export class ClubsService {
     };
   }
 
-  async listarMisPartidos(idUsuario: number) {
-    const hoy = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  // METODOS RESERVA TURNO (de un idClub)
 
-    const items = await this.reservaModel.findAll({
-      where: {
-        idUsuario,
-        pagada: true,
-        estado: { [Op.ne]: 'cancelada' },
-        fechaReserva: { [Op.gte]: hoy },
-      },
-      include: [
-        { model: Cancha, attributes: ['idCancha', 'denominacion'] },
-        { model: Club, attributes: ['idClub', 'razonSocial', 'nombreFantasia'] },
-        { model: Turno, attributes: ['idTurno', 'horaDesde', 'horaHasta', 'fecha', 'diaSemana'] },
+  private async assertCanchaAbiertaYSlotsOk(cancha: Cancha, fechaISO: string, slotIndexDesde: number, slotCount: number) {
+    if (slotIndexDesde < 0 || slotCount <= 0) {
+      throw new BadRequestException('slotIndexDesde >= 0 y slotCount > 0 requeridos');
+    }
+    // día habilitado según bitmask
+    const d = new Date(fechaISO);
+    const dia = d.getUTCDay(); // 0..6
+    const mask = 1 << dia;
+    if (((cancha as any).diasSemana & mask) === 0) {
+      throw new BadRequestException('La cancha no abre ese día');
+    }
+    // la consistencia de horarios la resuelve el front generando slots válidos.
+  }
+
+  private async haySolapamiento(
+    idCancha: number,
+    fecha: string,
+    desde: number,
+    hastaExcl: number,
+    excluirId?: number,
+  ) {
+    const where: any = {
+      idCancha,
+      fecha,
+      [Op.and]: [
+        { slotIndexDesde: { [Op.lt]: hastaExcl } },
+        Sequelize.where(Sequelize.literal('(slotIndexDesde + slotCount)'), { [Op.gt]: desde }),
       ],
-      order: [
-        ['fechaReserva', 'ASC'],
-        ['idTurno', 'ASC'],
-      ],
+    };
+    if (excluirId) where.idReservaTurno = { [Op.ne]: excluirId };
+    const existente = await this.reservaModel.findOne({ where });
+    return !!existente;
+  }
+
+  async crearReserva(dto: CrearReservaTurnoDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
+    const cancha = await this.canchaModel.findByPk(dto.idCancha);
+    if (!cancha) throw new NotFoundException('Cancha no encontrada');
+
+    //la cancha debe pertenecer al club
+    if (cancha.idClub !== dto.idClub) {
+      throw new BadRequestException('La cancha no pertenece a ese club');
+    }
+
+    const jugador = await this.usuarioModel.findByPk(dto.idJugador);
+    if (!jugador) throw new NotFoundException('Jugador no encontrado');
+
+    await this.assertCanchaAbiertaYSlotsOk(cancha, dto.fecha, dto.slotIndexDesde, dto.slotCount);
+
+    const from = dto.slotIndexDesde;
+    const toExcl = dto.slotIndexDesde + dto.slotCount;
+
+    const solapa = await this.haySolapamiento(cancha.idCancha, dto.fecha, from, toExcl);
+    if (solapa) throw new BadRequestException('El rango de slots ya está reservado');
+
+    const precioAplicado = (cancha as any).precio * dto.slotCount;
+
+    const creada = await this.reservaModel.create({
+      idCancha: cancha.idCancha,
+      idJugador: dto.idJugador,
+      fecha: dto.fecha,
+      slotIndexDesde: dto.slotIndexDesde,
+      slotCount: dto.slotCount,
+      precioAplicado,
+      pagado: false,
     });
 
-    return items;
+    return { mensaje: 'Reserva creada', reserva: creada };
+  }
+
+  async editarReserva(idReserva: number, dto: EditarReservaTurnoDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
+    const res = await this.reservaModel.findByPk(idReserva);
+    if (!res) throw new NotFoundException('Reserva no encontrada');
+
+    const cancha = await this.canchaModel.findByPk(dto.idCancha ?? res.idCancha);
+    if (!cancha) throw new NotFoundException('Cancha no encontrada');
+
+    //la reserva (por su cancha) debe pertenecer al club
+    if (cancha.idClub !== dto.idClub) {
+      throw new BadRequestException('La reserva no pertenece a ese club');
+    }
+
+    const fecha = dto.fecha ?? res.fecha;
+    const slotIndexDesde = typeof dto.slotIndexDesde === 'number' ? dto.slotIndexDesde : res.slotIndexDesde;
+    const slotCount = typeof dto.slotCount === 'number' ? dto.slotCount : res.slotCount;
+
+    await this.assertCanchaAbiertaYSlotsOk(cancha, fecha, slotIndexDesde, slotCount);
+
+    const from = slotIndexDesde;
+    const toExcl = slotIndexDesde + slotCount;
+
+    const solapa = await this.haySolapamiento(cancha.idCancha, fecha, from, toExcl, res.idReservaTurno);
+    if (solapa) throw new BadRequestException('El rango de slots ya está reservado');
+
+    const cambios: Partial<ReservaTurno> = {
+      idCancha: dto.idCancha ?? res.idCancha,
+      idJugador: dto.idJugador ?? res.idJugador,
+      fecha,
+      slotIndexDesde,
+      slotCount,
+      precioAplicado: typeof dto.precioAplicado === 'number' ? dto.precioAplicado : res.precioAplicado,
+      pagado: typeof dto.pagado === 'boolean' ? dto.pagado : res.pagado,
+    };
+
+    await this.reservaModel.update(cambios, { where: { idReservaTurno: idReserva } });
+
+    const actualizado = await this.reservaModel.findByPk(idReserva);
+    return { mensaje: 'Reserva actualizada', reserva: actualizado };
+  }
+
+  async listarReservas(q: ListarReservasTurnoDto & { idClub?: number }) {
+    if (!q.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
+    const page = q.page ?? 1;
+    const limit = q.limit ?? 10;
+    const offset = (page - 1) * limit;
+    const order: any[] = [[q.sortBy ?? 'idReservaTurno', (q.sortDir ?? 'ASC').toUpperCase()]];
+
+    // alcance por club: restringimos por canchas del club
+    // - si viene idCancha, validamos pertenencia
+    // - si no viene, filtra por todas las canchas del club
+    let canchasIds: number[] = [];
+
+    if (q.idCancha) {
+      const cancha = await this.canchaModel.findByPk(q.idCancha);
+      if (!cancha) throw new NotFoundException('Cancha no encontrada');
+      if (cancha.idClub !== q.idClub) throw new BadRequestException('La cancha no pertenece a ese club');
+      canchasIds = [q.idCancha];
+    } else {
+      const rows = await this.canchaModel.findAll({
+        where: { idClub: q.idClub },
+        attributes: ['idCancha'],
+      });
+      canchasIds = rows.map((r: any) => r.idCancha);
+      // si el club no tiene canchas, devuelve vacío sin romper
+      if (canchasIds.length === 0) {
+        return { page, limit, total: 0, totalPages: 0, items: [] };
+      }
+    }
+
+    const where: any = {
+      idCancha: { [Op.in]: canchasIds },
+    };
+
+    if (q.idJugador) where.idJugador = q.idJugador;
+    if (typeof q.pagado === 'boolean') where.pagado = q.pagado;
+
+    if (q.fechaDesde || q.fechaHasta) {
+      where.fecha = {
+        ...(q.fechaDesde ? { [Op.gte]: q.fechaDesde } : {}),
+        ...(q.fechaHasta ? { [Op.lte]: q.fechaHasta } : {}),
+      };
+    }
+
+    if (typeof q.slotIndexDesde === 'number') {
+      where.slotIndexDesde = q.slotIndexDesde;
+    }
+
+    if (q.slotCountMin || q.slotCountMax) {
+      where.slotCount = {
+        ...(q.slotCountMin ? { [Op.gte]: q.slotCountMin } : {}),
+        ...(q.slotCountMax ? { [Op.lte]: q.slotCountMax } : {}),
+      };
+    }
+
+    const { rows, count } = await this.reservaModel.findAndCountAll({
+      where,
+      order,
+      limit,
+      offset,
+      distinct: true,
+    });
+
+    return {
+      page,
+      limit,
+      total: count,
+      totalPages: Math.ceil(count / limit),
+      items: rows,
+    };
+  }
+
+  async pagarReserva(idReserva: number, dto: PagarReservaTurnoDto & { idClub?: number }) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+
+    const res = await this.reservaModel.findByPk(idReserva);
+    if (!res) throw new NotFoundException('Reserva no encontrada');
+
+    //validar que la reserva pertenece al club via cancha
+    const cancha = await this.canchaModel.findByPk(res.idCancha);
+    if (!cancha) throw new NotFoundException('Cancha no encontrada');
+    if (cancha.idClub !== dto.idClub) throw new BadRequestException('La reserva no pertenece a ese club');
+
+    const cambios: Partial<ReservaTurno> = {
+      pagado: typeof dto.pagado === 'boolean' ? dto.pagado : true,
+    };
+
+    await this.reservaModel.update(cambios, { where: { idReservaTurno: idReserva } });
+    const actualizado = await this.reservaModel.findByPk(idReserva);
+
+    return { mensaje: 'Reserva marcada como pagada', reserva: actualizado };
   }
 }

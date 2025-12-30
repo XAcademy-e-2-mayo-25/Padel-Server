@@ -6,26 +6,22 @@ import { ClubsService } from './clubs.service';
 // modelos Sequelize
 import { Club } from '../../database/models/club.model';
 import { Cancha } from '../../database/models/cancha.model';
-import { Turno } from '../../database/models/turno.model';
-import { CanchaTurno } from '../../database/models/canchaTurno.model';
 import { DatosPago } from '../../database/models/datosPago.model';
 import { Usuario } from '../../database/models/usuario.model';
 import { Estado } from '../../database/models/Estado.model';
-import { Reserva } from '../../database/models/reserva.model';
-import { ReservaTurno } from '../../database/models/reservaTurno.model';
+import { ReservaTurno } from 'src/database/models/reservaTurno.model';
+import { UsuarioRol } from 'src/database/models/usuariorol.model';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([
       Club,
       Cancha,
-      Turno,
-      CanchaTurno,
       DatosPago,
       Usuario,
       Estado,
-      Reserva,
       ReservaTurno,
+      UsuarioRol,
     ]),
   ],
   controllers: [ClubsController],
