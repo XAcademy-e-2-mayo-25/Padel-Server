@@ -10,6 +10,7 @@ import { DatosPago } from '../../database/models/datosPago.model';
 import { Usuario } from '../../database/models/usuario.model';
 import { Estado } from '../../database/models/Estado.model';
 import { ReservaTurno } from 'src/database/models/reservaTurno.model';
+import { UsuarioRol } from 'src/database/models/usuariorol.model';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ReservaTurno } from 'src/database/models/reservaTurno.model';
       Usuario,
       Estado,
       ReservaTurno,
+      UsuarioRol,
     ]),
   ],
   controllers: [ClubsController],
