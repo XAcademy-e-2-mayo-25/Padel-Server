@@ -128,6 +128,16 @@ export class UsuariosController {
     return this.usuariosService.actualizarRoles(id, dto);
   }
 
+  // obtener roles/estados de un usuario
+  @Get(':id/roles')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Obtener roles y estados del usuario' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID del usuario' })
+  @ApiOkResponse({ description: 'Roles encontrados.' })
+  obtenerRoles(@Param('id', ParseIntPipe) id: number) {
+    return this.usuariosService.obtenerRolesPorUsuario(id);
+  }
+
   //obtener un usuario con GET y id como parametro
   @Get(':id')
   @HttpCode(HttpStatus.OK)

@@ -23,7 +23,6 @@ const usuarioposicion_model_1 = require("../../database/models/usuarioposicion.m
 const rol_model_1 = require("../../database/models/rol.model");
 const Estado_model_1 = require("../../database/models/Estado.model");
 const posicion_model_1 = require("../../database/models/posicion.model");
-const clubs_service_1 = require("../clubs/clubs.service");
 const ROL_JUGADOR = 2;
 const ESTADO_HABILITADO = 2;
 const POSICION_NO_DEFINIDA = 1;
@@ -41,8 +40,7 @@ let UsuariosService = class UsuariosService {
     estadoModel;
     categoriaModel;
     sequelize;
-    clubsService;
-    constructor(usuarioModel, usuarioRolModel, usuarioPosModel, posicionModel, rolModel, estadoModel, categoriaModel, sequelize, clubsService) {
+    constructor(usuarioModel, usuarioRolModel, usuarioPosModel, posicionModel, rolModel, estadoModel, categoriaModel, sequelize) {
         this.usuarioModel = usuarioModel;
         this.usuarioRolModel = usuarioRolModel;
         this.usuarioPosModel = usuarioPosModel;
@@ -51,7 +49,6 @@ let UsuariosService = class UsuariosService {
         this.estadoModel = estadoModel;
         this.categoriaModel = categoriaModel;
         this.sequelize = sequelize;
-        this.clubsService = clubsService;
     }
     async findByEmail(email) {
         return this.usuarioModel.findOne({ where: { email } });
@@ -210,35 +207,29 @@ let UsuariosService = class UsuariosService {
         const mapa = new Map();
         (dto.estados ?? []).forEach((e) => mapa.set(e.idRol, { idEstado: e.idEstado, descripcion: e.descripcion }));
         const defaultEstado = dto.defaultEstado ?? ESTADO_PENDIENTE;
-        const actuales = await this.usuarioRolModel.findAll({ where: { idUsuario } });
-        const actualesSet = new Set(actuales.map((ur) => ur.idRol));
-        const toAdd = nuevo.filter((r) => !actualesSet.has(r));
-        const toKeep = nuevo.filter((r) => actualesSet.has(r));
-        const toRemove = [...actualesSet].filter((r) => !nuevo.includes(r));
         await this.sequelize.transaction(async (t) => {
+            const actuales = await this.usuarioRolModel.findAll({ where: { idUsuario }, transaction: t });
+            const actualesSet = new Set(actuales.map((ur) => ur.idRol));
+            const toRemove = [...actualesSet].filter((r) => !nuevo.includes(r));
             if (toRemove.length) {
                 await this.usuarioRolModel.destroy({
                     where: { idUsuario, idRol: { [sequelize_2.Op.in]: toRemove } },
                     transaction: t,
                 });
             }
-            if (toAdd.length) {
-                const rows = toAdd.map((idRol) => {
-                    const override = mapa.get(idRol);
-                    return {
-                        idUsuario,
-                        idRol,
-                        idEstado: override?.idEstado ?? defaultEstado,
-                        descripcion: override?.descripcion ?? null,
-                    };
-                });
-                await this.usuarioRolModel.bulkCreate(rows, { transaction: t });
-            }
-            const toUpdate = toKeep.filter((idRol) => mapa.has(idRol));
-            for (const idRol of toUpdate) {
-                const { idEstado, descripcion } = mapa.get(idRol);
-                await this.usuarioRolModel.update({ idEstado, descripcion: descripcion ?? null }, { where: { idUsuario, idRol }, transaction: t });
-            }
+            const rows = nuevo.map((idRol) => {
+                const override = mapa.get(idRol);
+                return {
+                    idUsuario,
+                    idRol,
+                    idEstado: override?.idEstado ?? defaultEstado,
+                    descripcion: override?.descripcion ?? null,
+                };
+            });
+            await this.usuarioRolModel.bulkCreate(rows, {
+                updateOnDuplicate: ['idEstado', 'descripcion'],
+                transaction: t,
+            });
         });
         const actualizado = await this.usuarioModel.findByPk(idUsuario, {
             include: [
@@ -261,6 +252,14 @@ let UsuariosService = class UsuariosService {
         if (!usuario)
             throw new common_1.NotFoundException('Usuario no encontrado');
         return usuario;
+    }
+    async obtenerRolesPorUsuario(idUsuario) {
+        const usuario = await this.usuarioModel.findByPk(idUsuario, {
+            include: [{ model: usuariorol_model_1.UsuarioRol, include: [rol_model_1.Rol, Estado_model_1.Estado] }],
+        });
+        if (!usuario)
+            throw new common_1.NotFoundException('Usuario no encontrado');
+        return usuario.roles ?? [];
     }
     async listarUsuarios(q) {
         const page = q.page ?? 1;
@@ -315,10 +314,6 @@ let UsuariosService = class UsuariosService {
             items: rows,
         };
     }
-    async listarMisPartidos(userId) {
-        console.log('Buscando partidos del user:', userId);
-        return this.clubsService.listarMisPartidos(userId);
-    }
 };
 exports.UsuariosService = UsuariosService;
 exports.UsuariosService = UsuariosService = __decorate([
@@ -330,7 +325,6 @@ exports.UsuariosService = UsuariosService = __decorate([
     __param(4, (0, sequelize_1.InjectModel)(rol_model_1.Rol)),
     __param(5, (0, sequelize_1.InjectModel)(Estado_model_1.Estado)),
     __param(6, (0, sequelize_1.InjectModel)(Estado_model_1.Estado)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, sequelize_typescript_1.Sequelize,
-        clubs_service_1.ClubsService])
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, sequelize_typescript_1.Sequelize])
 ], UsuariosService);
 //# sourceMappingURL=usuarios.service.js.map

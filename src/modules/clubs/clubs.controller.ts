@@ -19,19 +19,16 @@ import {
   EditarClubDto,
   CrearCanchaDto,
   EditarCanchaDto,
-  CrearTurnoDto,
-  CrearSlotDto,
-  EditarTurnoDto,
-  AsignarTurnoCanchaDto,
-  QuitarTurnoCanchaDto,
-  ActualizarTurnoCanchaDto,
   CrearDatosPagoDto,
   ActualizarDatosPagoDto,
   ListarCanchasDto,
   ListarClubsDto,
   ListarDatosPagosDto,
-  ListarTurnosDto,
-  ListarTurnosCanchasDto,
+  CrearReservaTurnoDto,
+  EditarReservaTurnoDto,
+  ListarReservasTurnoDto,
+  PagarReservaTurnoDto,
+  AprobarClubDto,
 } from './dto';
 
 //Todos los endpoint de este controller carecen de guards/roles, falta configurarlos
@@ -41,7 +38,7 @@ import {
 export class ClubsController {
   constructor(private readonly clubsService: ClubsService) {}
 
-// Endpoints CLUB
+  // Endpoints CLUB
 
   // Crear club
   @Post()
@@ -57,6 +54,13 @@ export class ClubsController {
     return this.clubsService.listarClubs(query);
   }
 
+  // Obtener club por id
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  obtenerClub(@Param('id', ParseIntPipe) id: number) {
+    return this.clubsService.obtenerClub(id);
+  }
+
   // Editar club
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
@@ -64,123 +68,102 @@ export class ClubsController {
     return this.clubsService.editarClub(id, dto);
   }
 
-// Endpoints CANCHA
+  // Aprobar club (pasa a estado HABILITADO y habilita rol CLUB del usuario)
+  @Patch(':id/aprobar')
+  @HttpCode(HttpStatus.OK)
+  aprobarClub(@Param('id', ParseIntPipe) id: number, @Body() dto: AprobarClubDto) {
+    return this.clubsService.aprobarClub(id, dto);
+  }
+
+  // Endpoints CANCHA (por club)
 
   // Crear cancha
-  @Post('canchas')
+  @Post(':idClub/canchas')
   @HttpCode(HttpStatus.CREATED)
-  crearCancha(@Body() dto: CrearCanchaDto) {
-    return this.clubsService.crearCancha(dto);
+  crearCancha(@Param('idClub', ParseIntPipe) idClub: number, @Body() dto: CrearCanchaDto) {
+    return this.clubsService.crearCancha({ ...dto, idClub });
   }
 
   // Listar canchas
-  @Get('canchas')
+  @Get(':idClub/canchas')
   @HttpCode(HttpStatus.OK)
-  listarCanchas(@Query() query: ListarCanchasDto) {
-    return this.clubsService.listarCanchas(query);
+  listarCanchas(@Param('idClub', ParseIntPipe) idClub: number, @Query() query: ListarCanchasDto) {
+    return this.clubsService.listarCanchas({ ...query, idClub });
   }
 
   // Editar cancha
-  @Patch('canchas/:id')
+  @Patch(':idClub/canchas/:id')
   @HttpCode(HttpStatus.OK)
-  editarCancha(@Param('id', ParseIntPipe) id: number, @Body() dto: EditarCanchaDto) {
-    return this.clubsService.editarCancha(id, dto);
-  }
-
-// Endpoints TURNO
-
-  // Crear turno
-  @Post('turnos')
-  @HttpCode(HttpStatus.CREATED)
-  crearTurno(@Body() dto: CrearTurnoDto) {
-    return this.clubsService.crearTurno(dto);
-  }
-
-  // Crear slot completo (turno + asignación a cancha)
-  @Post('slots')
-  @HttpCode(HttpStatus.CREATED)
-  crearSlot(@Body() dto: CrearSlotDto) {
-    return this.clubsService.crearSlot(dto);
-  }
-
-  // Listar turnos
-  @Get('turnos')
-  @HttpCode(HttpStatus.OK)
-  listarTurnos(@Query() query: ListarTurnosDto) {
-    return this.clubsService.listarTurnos(query);
-  }
-
-  // Editar turno
-  @Patch('turnos/:id')
-  @HttpCode(HttpStatus.OK)
-  editarTurno(@Param('id', ParseIntPipe) id: number, @Body() dto: EditarTurnoDto) {
-    return this.clubsService.editarTurno(id, dto);
-  }
-
-// Endpoints CANCHA–TURNO
-
-  // Asignar un turno a una cancha
-  @Post('turnos/asignar')
-  @HttpCode(HttpStatus.CREATED)
-  asignarTurnoCancha(@Body() dto: AsignarTurnoCanchaDto) {
-    return this.clubsService.asignarTurnoCancha(dto);
-  }
-
-  // Listar turnos por cancha
-  @Get('turnos/canchas')
-  @HttpCode(HttpStatus.OK)
-  listarTurnosCancha(@Query() query: ListarTurnosCanchasDto) {
-    return this.clubsService.listarTurnosCancha(query);
-  }
-
-  // Actualizar relación cancha-turno
-  @Patch('turnos/cancha/:idCancha/:idTurno')
-  @HttpCode(HttpStatus.OK)
-  actualizarTurnoCancha(
-    @Param('idCancha', ParseIntPipe) idCancha: number,
-    @Param('idTurno', ParseIntPipe) idTurno: number,
-    @Body() dto: ActualizarTurnoCanchaDto,
+  editarCancha(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: EditarCanchaDto,
   ) {
-    return this.clubsService.actualizarTurnoCancha(idCancha, idTurno, dto);
+    return this.clubsService.editarCancha(id, { ...dto, idClub });
   }
 
-  // Quitar un turno de una cancha
-  @Post('turnos/desasignar')
-  @HttpCode(HttpStatus.OK)
-  quitarTurnoCancha(@Body() dto: QuitarTurnoCanchaDto) {
-    return this.clubsService.quitarTurnoCancha(dto);
-  }
-
-  // Endpoints DATOS DE PAGO
+  // Endpoints DATOS DE PAGO (por club)
 
   // Crear método de pago
-  @Post('datos-pago')
+  @Post(':idClub/datos-pago')
   @HttpCode(HttpStatus.CREATED)
-  crearDatosPago(@Body() dto: CrearDatosPagoDto) {
-    return this.clubsService.crearDatosPago(dto);
+  crearDatosPago(@Param('idClub', ParseIntPipe) idClub: number, @Body() dto: CrearDatosPagoDto) {
+    return this.clubsService.crearDatosPago({ ...dto, idClub });
   }
 
   // Listar métodos de pago
-  @Get('datos-pago')
+  @Get(':idClub/datos-pago')
   @HttpCode(HttpStatus.OK)
-  listarDatosPagos(@Query() query: ListarDatosPagosDto) {
-    return this.clubsService.listarDatosPagos(query);
+  listarDatosPagos(@Param('idClub', ParseIntPipe) idClub: number, @Query() query: ListarDatosPagosDto) {
+    return this.clubsService.listarDatosPagos({ ...query, idClub });
   }
 
   // Actualizar método de pago
-  @Patch('datos-pago/:id')
+  @Patch(':idClub/datos-pago/:id')
   @HttpCode(HttpStatus.OK)
   actualizarDatosPago(
+    @Param('idClub', ParseIntPipe) idClub: number,
     @Param('id', ParseIntPipe) idDatosPago: number,
     @Body() dto: ActualizarDatosPagoDto,
   ) {
-    return this.clubsService.actualizarDatosPago(idDatosPago, dto);
+    return this.clubsService.actualizarDatosPago(idDatosPago, { ...dto, idClub });
   }
 
-  // Obtener club por id (ubicado al final para evitar conflictos con rutas estáticas)
-  @Get(':id')
+  // Endpoints RESERVA TURNO (por club)
+
+  // Crear reserva
+  @Post(':idClub/reservas')
+  @HttpCode(HttpStatus.CREATED)
+  crearReserva(@Param('idClub', ParseIntPipe) idClub: number, @Body() dto: CrearReservaTurnoDto) {
+    return this.clubsService.crearReserva({ ...dto, idClub } as any);
+  }
+
+  // Listar reservas
+  @Get(':idClub/reservas')
   @HttpCode(HttpStatus.OK)
-  obtenerClub(@Param('id', ParseIntPipe) id: number) {
-    return this.clubsService.obtenerClub(id);
+  listarReservas(@Param('idClub', ParseIntPipe) idClub: number, @Query() query: ListarReservasTurnoDto) {
+    return this.clubsService.listarReservas({ ...query, idClub } as any);
+  }
+
+  // Editar reserva
+  @Patch(':idClub/reservas/:id')
+  @HttpCode(HttpStatus.OK)
+  editarReserva(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: EditarReservaTurnoDto,
+  ) {
+    return this.clubsService.editarReserva(id, { ...dto, idClub } as any);
+  }
+
+  // Pagar reserva
+  @Patch(':idClub/reservas/:id/pagar')
+  @HttpCode(HttpStatus.OK)
+  pagarReserva(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: PagarReservaTurnoDto,
+  ) {
+    return this.clubsService.pagarReserva(id, { ...dto, idClub } as any);
   }
 }

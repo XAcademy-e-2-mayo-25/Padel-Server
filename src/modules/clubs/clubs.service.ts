@@ -11,6 +11,7 @@ import { Usuario } from '../../database/models/usuario.model';
 import { Estado } from '../../database/models/Estado.model';
 import { ReservaTurno } from 'src/database/models/reservaTurno.model';
 import { UsuarioRol } from 'src/database/models/usuariorol.model';
+import { AprobarClubDto } from './dto/aprobar-club.dto';
 
 // DTOs
 import {
@@ -100,6 +101,37 @@ export class ClubsService {
     });
 
     return { mensaje: 'Club creado correctamente', club: withRels };
+  }
+
+  async aprobarClub(idClub: number, dto: AprobarClubDto) {
+    const club = await this.clubModel.findByPk(idClub);
+    if (!club) throw new NotFoundException('Club no encontrado');
+
+    await this.sequelize.transaction(async (t) => {
+      await this.clubModel.update(
+        { idEstadoClub: ESTADO_HABILITADO },
+        { where: { idClub }, transaction: t },
+      );
+
+      // upsert del rol CLUB del usuario dueño del club
+      await this.usuarioRolModel.bulkCreate(
+        [
+          {
+            idUsuario: club.idUsuario,
+            idRol: ROL_CLUB,
+            idEstado: ESTADO_HABILITADO,
+            descripcion: dto.descripcion ?? 'Habilitado como club',
+          },
+        ],
+        {
+          updateOnDuplicate: ['idEstado', 'descripcion'],
+          transaction: t,
+        },
+      );
+    });
+
+    const actualizado = await this.clubModel.findByPk(idClub, { include: [Usuario, Estado] });
+    return { mensaje: 'Club aprobado', club: actualizado };
   }
 
 

@@ -23,9 +23,6 @@ import { CrearUsuarioDto } from './dto/crear-usuario.dto';
 import { BajaUsuarioDto } from './dto/baja-usuario.dto';
 import { Categoria } from 'src/database/models/Categoria.model';
 
-
-import { ClubsService } from '../clubs/clubs.service';
-
 // Valores por defecto en la creación de un usuario
 const ROL_JUGADOR = 2;
 const ESTADO_HABILITADO = 2;
@@ -53,7 +50,6 @@ export class UsuariosService {
     @InjectModel(Estado) private readonly estadoModel: typeof Estado,
     @InjectModel(Estado) private readonly categoriaModel: typeof Categoria,
     private readonly sequelize: Sequelize,
-    private readonly clubsService: ClubsService,
   ) {}
 
   // Método público para buscar usuario por email (sino tira error en el auth.service)
@@ -268,14 +264,11 @@ export class UsuariosService {
 
     const defaultEstado = dto.defaultEstado ?? ESTADO_PENDIENTE;
 
-    const actuales = await this.usuarioRolModel.findAll({ where: { idUsuario } });
-    const actualesSet = new Set(actuales.map((ur) => ur.idRol));
-
-    const toAdd = nuevo.filter((r) => !actualesSet.has(r));
-    const toKeep = nuevo.filter((r) => actualesSet.has(r));
-    const toRemove = [...actualesSet].filter((r) => !nuevo.includes(r));
-
     await this.sequelize.transaction(async (t) => {
+      const actuales = await this.usuarioRolModel.findAll({ where: { idUsuario }, transaction: t });
+      const actualesSet = new Set(actuales.map((ur) => ur.idRol));
+
+      const toRemove = [...actualesSet].filter((r) => !nuevo.includes(r));
       if (toRemove.length) {
         await this.usuarioRolModel.destroy({
           where: { idUsuario, idRol: { [Op.in]: toRemove } as any },
@@ -283,27 +276,21 @@ export class UsuariosService {
         });
       }
 
-      if (toAdd.length) {
-        const rows = toAdd.map((idRol) => {
-          const override = mapa.get(idRol);
-          return {
-            idUsuario,
-            idRol,
-            idEstado: override?.idEstado ?? defaultEstado,
-            descripcion: override?.descripcion ?? null,
-          };
-        });
-        await this.usuarioRolModel.bulkCreate(rows, { transaction: t });
-      }
+      const rows = nuevo.map((idRol) => {
+        const override = mapa.get(idRol);
+        return {
+          idUsuario,
+          idRol,
+          idEstado: override?.idEstado ?? defaultEstado,
+          descripcion: override?.descripcion ?? null,
+        };
+      });
 
-      const toUpdate = toKeep.filter((idRol) => mapa.has(idRol));
-      for (const idRol of toUpdate) {
-        const { idEstado, descripcion } = mapa.get(idRol)!;
-        await this.usuarioRolModel.update(
-          { idEstado, descripcion: descripcion ?? null },
-          { where: { idUsuario, idRol }, transaction: t },
-        );
-      }
+      // upsert por rol para evitar duplicados de PK
+      await this.usuarioRolModel.bulkCreate(rows, {
+        updateOnDuplicate: ['idEstado', 'descripcion'],
+        transaction: t,
+      });
     });
 
     const actualizado = await this.usuarioModel.findByPk(idUsuario, {
@@ -329,6 +316,15 @@ export class UsuariosService {
     });
     if (!usuario) throw new NotFoundException('Usuario no encontrado');
     return usuario;
+  }
+
+  // devuelve solo los roles/estados asociados a un usuario
+  async obtenerRolesPorUsuario(idUsuario: number) {
+    const usuario = await this.usuarioModel.findByPk(idUsuario, {
+      include: [{ model: UsuarioRol, include: [Rol, Estado] }],
+    });
+    if (!usuario) throw new NotFoundException('Usuario no encontrado');
+    return usuario.roles ?? [];
   }
 
   // lista/busca usuarios con el parametro query listarUsuarioDto
@@ -389,8 +385,4 @@ export class UsuariosService {
       items: rows,
     };
   }
-  async listarMisPartidos(userId: number) {
-  console.log('Buscando partidos del user:', userId);
-  return this.clubsService.listarMisPartidos(userId);
-}
 }

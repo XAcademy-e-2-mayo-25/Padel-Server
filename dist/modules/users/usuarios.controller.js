@@ -50,6 +50,9 @@ let UsuariosController = class UsuariosController {
     actualizarRoles(id, dto) {
         return this.usuariosService.actualizarRoles(id, dto);
     }
+    obtenerRoles(id) {
+        return this.usuariosService.obtenerRolesPorUsuario(id);
+    }
     obtenerUno(id) {
         return this.usuariosService.obtenerUsuario(id);
     }
@@ -61,10 +64,6 @@ let UsuariosController = class UsuariosController {
             mensaje: `Felicidades ${req.user.email}, estás registrado y autenticado!`,
             usuario: req.user,
         };
-    }
-    async listarMisPartidos(req) {
-        console.log('req.user:', req.user);
-        return this.usuariosService.listarMisPartidos(req.user.id);
     }
 };
 exports.UsuariosController = UsuariosController;
@@ -170,6 +169,17 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsuariosController.prototype, "actualizarRoles", null);
 __decorate([
+    (0, common_1.Get)(':id/roles'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Obtener roles y estados del usuario' }),
+    (0, swagger_1.ApiParam)({ name: 'id', type: Number, description: 'ID del usuario' }),
+    (0, swagger_1.ApiOkResponse)({ description: 'Roles encontrados.' }),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], UsuariosController.prototype, "obtenerRoles", null);
+__decorate([
     (0, common_1.Get)(':id'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: 'Obtener detalle de usuario' }),
@@ -213,17 +223,6 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], UsuariosController.prototype, "felicidades", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Get)('me/matches'),
-    (0, swagger_1.ApiBearerAuth)('access-token'),
-    (0, swagger_1.ApiOperation)({ summary: 'Listar mis partidos' }),
-    (0, swagger_1.ApiOkResponse)({ description: 'Listado de partidos del jugador.' }),
-    __param(0, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], UsuariosController.prototype, "listarMisPartidos", null);
 exports.UsuariosController = UsuariosController = __decorate([
     (0, swagger_1.ApiTags)('Usuarios'),
     (0, common_1.Controller)('usuarios'),

@@ -50,6 +50,7 @@ export declare class UsuariosController {
         mensaje: string;
         usuario: import("../../database/models/usuario.model").Usuario | null;
     }>;
+    obtenerRoles(id: number): Promise<import("../../database/models/usuariorol.model").UsuarioRol[]>;
     obtenerUno(id: number): Promise<import("../../database/models/usuario.model").Usuario>;
     listar(query: ListarUsuariosDto): Promise<{
         page: number;
@@ -62,5 +63,4 @@ export declare class UsuariosController {
         mensaje: string;
         usuario: any;
     };
-    listarMisPartidos(req: any): Promise<import("../../database/models/reserva.model").Reserva[]>;
 }
