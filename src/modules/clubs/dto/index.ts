@@ -11,3 +11,4 @@ export * from './crear-reserva-turno.dto';
 export * from './editar-reserva-turno.dto';
 export * from './listar-reservas-turno.dto';
 export * from './pagar-reserva-turno.dto';
+export * from './crear-reserva-jugador.dto';

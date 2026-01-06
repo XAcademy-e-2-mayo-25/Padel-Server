@@ -9,9 +9,13 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
+  Req,
+  Delete
 } from '@nestjs/common';
 
 import { ClubsService } from './clubs.service';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 // DTOs
 import {
@@ -28,6 +32,7 @@ import {
   EditarReservaTurnoDto,
   ListarReservasTurnoDto,
   PagarReservaTurnoDto,
+  CrearReservaJugadorDto,
 } from './dto';
 
 //Todos los endpoint de este controller carecen de guards/roles, falta configurarlos
@@ -124,11 +129,35 @@ export class ClubsController {
   // Endpoints RESERVA TURNO (por club)
 
   // Crear reserva
-  @Post(':idClub/reservas')
+  /*@Post(':idClub/reservas')
   @HttpCode(HttpStatus.CREATED)
   crearReserva(@Param('idClub', ParseIntPipe) idClub: number, @Body() dto: CrearReservaTurnoDto) {
     return this.clubsService.crearReserva({ ...dto, idClub } as any);
+  }*/
+
+  // Crear reserva (por un jugador - usa dto crear-reserva-jugador)
+  @UseGuards(JwtAuthGuard)
+  @Post(':idClub/reservas')
+  @HttpCode(HttpStatus.CREATED)
+  crearReserva(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Body() dto: CrearReservaJugadorDto,
+    @Req() req: any
+  ) {
+    const idJugador = Number(req?.user?.id ?? req?.user?.idUsuario);
+    return this.clubsService.crearReserva({ ...dto, idClub, idJugador } as any);
   }
+
+  //crear reserva (por un club - usa el dto crear-reserva-turno)
+  @Post(':idClub/reservas/club')
+  @HttpCode(HttpStatus.CREATED)
+  crearReservaAdmin(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Body() dto: CrearReservaTurnoDto,
+  ) {
+    return this.clubsService.crearReserva({ ...dto, idClub } as any);
+  }
+
 
   // Listar reservas
   @Get(':idClub/reservas')
@@ -148,7 +177,7 @@ export class ClubsController {
     return this.clubsService.editarReserva(id, { ...dto, idClub } as any);
   }
 
-  // Pagar reserva
+  /*// Pagar reserva
   @Patch(':idClub/reservas/:id/pagar')
   @HttpCode(HttpStatus.OK)
   pagarReserva(
@@ -157,5 +186,33 @@ export class ClubsController {
     @Body() dto: PagarReservaTurnoDto,
   ) {
     return this.clubsService.pagarReserva(id, { ...dto, idClub } as any);
+  }*/
+
+  // pagar reserva (jugador)
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':idClub/reservas/:id/pagar-jugador')
+  @HttpCode(HttpStatus.OK)
+  pagarReservaJugador(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: PagarReservaTurnoDto,
+    @Req() req: any,
+  ) {
+    const idJugador = Number(req?.user?.id ?? req?.user?.idUsuario);
+    return this.clubsService.pagarReservaJugador(id, { ...dto, idClub, idJugador } as any);
+  }
+
+  //cancelar reserva (jugador)
+  @UseGuards(JwtAuthGuard)
+  @Delete(':idClub/reservas/:id/jugador')
+  @HttpCode(HttpStatus.OK)
+  cancelarReservaJugador(
+    @Param('idClub', ParseIntPipe) idClub: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: any,
+  ) {
+    const idJugador = Number(req?.user?.id ?? req?.user?.idUsuario);
+    return this.clubsService.eliminarReservaJugador(id, { idClub, idJugador } as any);
   }
 }

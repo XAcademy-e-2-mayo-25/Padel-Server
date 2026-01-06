@@ -492,8 +492,8 @@ export class ClubsService {
     const order: any[] = [[q.sortBy ?? 'idReservaTurno', (q.sortDir ?? 'ASC').toUpperCase()]];
 
     // alcance por club: restringimos por canchas del club
-    // - si viene idCancha, validamos pertenencia
-    // - si no viene, filtra por todas las canchas del club
+    // si viene idCancha se valida su pertenencia
+    // si idCancha esta vacio se filtra por todas las canchas del club
     let canchasIds: number[] = [];
 
     if (q.idCancha) {
@@ -507,7 +507,7 @@ export class ClubsService {
         attributes: ['idCancha'],
       });
       canchasIds = rows.map((r: any) => r.idCancha);
-      // si el club no tiene canchas, devuelve vacío sin romper
+      // si el club no tiene canchas devuelve vacío
       if (canchasIds.length === 0) {
         return { page, limit, total: 0, totalPages: 0, items: [] };
       }
@@ -574,5 +574,58 @@ export class ClubsService {
     const actualizado = await this.reservaModel.findByPk(idReserva);
 
     return { mensaje: 'Reserva marcada como pagada', reserva: actualizado };
+  }
+
+  async pagarReservaJugador(
+    idReserva: number,
+    dto: PagarReservaTurnoDto & { idClub?: number; idJugador?: number },
+  ) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+    if (!dto.idJugador) throw new BadRequestException('idJugador requerido');
+
+    const res = await this.reservaModel.findByPk(idReserva);
+    if (!res) throw new NotFoundException('Reserva no encontrada');
+
+    // validar que la reserva pertenece al club via cancha
+    const cancha = await this.canchaModel.findByPk(res.idCancha);
+    if (!cancha) throw new NotFoundException('Cancha no encontrada');
+    if (cancha.idClub !== dto.idClub) throw new BadRequestException('La reserva no pertenece a ese club');
+
+    // validar dueño
+    if (Number(res.idJugador) !== Number(dto.idJugador)) {
+      throw new BadRequestException('La reserva no pertenece al jugador logueado');
+    }
+
+    const cambios: Partial<ReservaTurno> = {
+      pagado: typeof dto.pagado === 'boolean' ? dto.pagado : true,
+    };
+
+    await this.reservaModel.update(cambios, { where: { idReservaTurno: idReserva } });
+    const actualizado = await this.reservaModel.findByPk(idReserva);
+
+    return { mensaje: 'Reserva marcada como pagada', reserva: actualizado };
+  }
+
+  async eliminarReservaJugador(
+    idReserva: number,
+    dto: { idClub?: number; idJugador?: number },
+  ) {
+    if (!dto.idClub) throw new BadRequestException('idClub requerido en la ruta');
+    if (!dto.idJugador) throw new BadRequestException('idJugador requerido');
+
+    const res = await this.reservaModel.findByPk(idReserva);
+    if (!res) throw new NotFoundException('Reserva no encontrada');
+
+    const cancha = await this.canchaModel.findByPk(res.idCancha);
+    if (!cancha) throw new NotFoundException('Cancha no encontrada');
+    if (cancha.idClub !== dto.idClub) throw new BadRequestException('La reserva no pertenece a ese club');
+
+    if (Number(res.idJugador) !== Number(dto.idJugador)) {
+      throw new BadRequestException('La reserva no pertenece al jugador logueado');
+    }
+
+    await this.reservaModel.destroy({ where: { idReservaTurno: idReserva } });
+
+    return { mensaje: 'Reserva cancelada y eliminada', idReservaTurno: idReserva };
   }
 }
