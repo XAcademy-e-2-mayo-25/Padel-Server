@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Length, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, isString, IsString, Length, Min } from 'class-validator';
 
 export class ListarClubsDto {
   // Paginación
@@ -56,4 +56,8 @@ export class ListarClubsDto {
   @IsInt()
   @Min(1)
   idUsuario?: number;
+
+  @IsOptional()
+  @IsString()
+  q?: string;
 }
