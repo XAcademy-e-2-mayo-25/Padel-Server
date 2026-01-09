@@ -245,7 +245,7 @@ export class UsuariosService {
     };
   }
 
-  // reemplaza el set de roles de un usuario
+  // nuevo metodo para reemplazar el set de roles de un usuario
   async actualizarRoles(idUsuario: number, dto: EditarRolesDto) {
     const usuario = await this.usuarioModel.findByPk(idUsuario);
     if (!usuario) throw new NotFoundException('Usuario no encontrado');
@@ -287,7 +287,10 @@ export class UsuariosService {
             descripcion: override?.descripcion ?? null,
           };
         });
-        await this.usuarioRolModel.bulkCreate(rows, { transaction: t });
+        await this.usuarioRolModel.bulkCreate(rows, {
+          transaction: t,
+          updateOnDuplicate: ['idEstado', 'descripcion'],
+        });
       }
 
       const toUpdate = toKeep.filter((idRol) => mapa.has(idRol));
@@ -300,12 +303,18 @@ export class UsuariosService {
       }
     });
 
-    const actualizado = await this.usuarioModel.findByPk(idUsuario, {
-      include: [
-        { model: UsuarioRol, include: [Rol, Estado] },
-        { model: UsuarioPosicion, include: [Posicion] },
-      ],
-    });
+    let actualizado: any = null;
+
+    try {
+      actualizado = await this.usuarioModel.findByPk(idUsuario, {
+        include: [
+          { model: UsuarioRol, include: [Rol, Estado] },
+          { model: UsuarioPosicion, include: [Posicion] },
+        ],
+      });
+    } catch (e) {
+      actualizado = await this.usuarioModel.findByPk(idUsuario);
+    }
 
     return {
       mensaje: 'Roles actualizados correctamente',

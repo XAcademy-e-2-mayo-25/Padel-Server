@@ -48,7 +48,7 @@ export declare class UsuariosController {
     }>;
     actualizarRoles(id: number, dto: EditarRolesDto): Promise<{
         mensaje: string;
-        usuario: import("../../database/models/usuario.model").Usuario | null;
+        usuario: any;
     }>;
     obtenerUno(id: number): Promise<import("../../database/models/usuario.model").Usuario>;
     listar(query: ListarUsuariosDto): Promise<{

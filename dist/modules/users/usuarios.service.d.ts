@@ -60,7 +60,7 @@ export declare class UsuariosService {
     }>;
     actualizarRoles(idUsuario: number, dto: EditarRolesDto): Promise<{
         mensaje: string;
-        usuario: Usuario | null;
+        usuario: any;
     }>;
     obtenerUsuario(idUsuario: number): Promise<Usuario>;
     listarUsuarios(q: ListarUsuariosDto): Promise<{
