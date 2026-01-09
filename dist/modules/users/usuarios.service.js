@@ -227,7 +227,10 @@ let UsuariosService = class UsuariosService {
                         descripcion: override?.descripcion ?? null,
                     };
                 });
-                await this.usuarioRolModel.bulkCreate(rows, { transaction: t });
+                await this.usuarioRolModel.bulkCreate(rows, {
+                    transaction: t,
+                    updateOnDuplicate: ['idEstado', 'descripcion'],
+                });
             }
             const toUpdate = toKeep.filter((idRol) => mapa.has(idRol));
             for (const idRol of toUpdate) {
@@ -235,12 +238,18 @@ let UsuariosService = class UsuariosService {
                 await this.usuarioRolModel.update({ idEstado, descripcion: descripcion ?? null }, { where: { idUsuario, idRol }, transaction: t });
             }
         });
-        const actualizado = await this.usuarioModel.findByPk(idUsuario, {
-            include: [
-                { model: usuariorol_model_1.UsuarioRol, include: [rol_model_1.Rol, Estado_model_1.Estado] },
-                { model: usuarioposicion_model_1.UsuarioPosicion, include: [posicion_model_1.Posicion] },
-            ],
-        });
+        let actualizado = null;
+        try {
+            actualizado = await this.usuarioModel.findByPk(idUsuario, {
+                include: [
+                    { model: usuariorol_model_1.UsuarioRol, include: [rol_model_1.Rol, Estado_model_1.Estado] },
+                    { model: usuarioposicion_model_1.UsuarioPosicion, include: [posicion_model_1.Posicion] },
+                ],
+            });
+        }
+        catch (e) {
+            actualizado = await this.usuarioModel.findByPk(idUsuario);
+        }
         return {
             mensaje: 'Roles actualizados correctamente',
             usuario: actualizado,
